@@ -21,6 +21,7 @@ private:
 };
 
 static GameStruct game;
+int Game::icon_w = 0;
 
 void Game::init() {
     // No double initializing!
@@ -32,7 +33,6 @@ void Game::init() {
         Rect temp;
         SDL_GetDisplayUsableBounds(0, &temp);
         game.mMaxW = temp.w; game.mMaxH = temp.h;
-        std::cout << "Display Size: " << game.mMaxW << "x" << game.mMaxH << std::endl;
 
         game.mScreen = Rect(0, 0, game.mMaxW / 2, game.mMaxH / 2);
         game.mCamera = { (int)game.mScreen.cX(), (int)game.mScreen.cY() };
@@ -74,7 +74,8 @@ void Game::init() {
         closedir(assetsDir);
     }
 
-    game.mContext.init((int)(fmin(game.mMaxW, game.mMaxH) / 15));
+    icon_w = (int)(fmin(game.mMaxW, game.mMaxH) / 15);
+    game.mContext.init();
 }
 void Game::clean() {
     // If we call clean, the game must end

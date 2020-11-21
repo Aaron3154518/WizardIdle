@@ -13,17 +13,22 @@ INCLUDE_PATHS = -I$(INC)/SDL2-2.0.12/$(SDL_INC) -I$(INC)/SDL2_image-2.0.5/$(SDL_
 LIBRARY_PATHS = -L$(INC)/SDL2-2.0.12/$(SDL_LIB) -L$(INC)/SDL2_image-2.0.5/$(SDL_LIB) -L$(INC)/SDL2_ttf-2.0.15/$(SDL_LIB)
 LINKER_FLAGS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
 
-$(OBJ)/%.o: $(SRC)/%.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $^ $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKER_FLAGS)
+SOURCES = Rect Number Tools AssetManager Game \
+          WizardContext WizardIdle
+OBJECTS = $(patsubst %, $(OBJ)/%.o, $(SOURCES))
+DEPENDS = $(patsubst %, $(OBJ)/%.d, $(SOURCES))
 
-_DEPS = Rect Number Tools AssetManager Game \
-       WizardContext WizardIdle
-DEPS = $(patsubst %, $(OBJ)/%.o, $(_DEPS))
 
-wizard_idle: $(DEPS)
-	$(CXX) $(CXXFLAGS) -o $(BIN)/$@ $^ $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKER_FLAGS)
+wizard_idle: $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(BIN)/$@ $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKER_FLAGS)
+
+-include $(DEPENDS)
+
 .PHONY: clean
 
 clean:
-	rm -f bin/wizard_idle
-	rm -f obj/%
+	$(RM) $(OBJECTS) $(DEPENDS) $(BIN)/wizard_idle
+
+$(OBJ)/%.o: $(SRC)/%.cpp Makefile
+	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@ $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKER_FLAGS)
+

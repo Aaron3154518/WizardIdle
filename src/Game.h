@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GAME_h
+#define GAME_h
 
 #include <vector>
 #include <unordered_map>
@@ -44,4 +45,8 @@ public:
     SDL_Point camera() const;
     Rect screen() const;
     Rect getAbsRect(const Rect& r) const;
+
+    static int icon_w;
 };
+
+#endif /* GAME_h */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TOOLS_h
+#define TOOLS_h
 
 #include <unordered_map>
 
@@ -77,3 +78,5 @@ private:
     std::unordered_map<std::string, Number> m_add, m_mult;
     std::unordered_map<std::string, double> m_pow;
 };
+
+#endif /* TOOLS_h */

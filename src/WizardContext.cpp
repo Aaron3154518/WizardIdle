@@ -31,6 +31,60 @@ void noDrag(Sprite& s, Event& e) {
     }
 }
 
+// Fireball
+bool Fireball::update(Rect& target, Timestep ts) {
+    double dx = target.cX() - x, dy = target.cY() - y;
+    double mag = sqrt(dx*dx + dy*dy);
+    if (mag <= 10) { return true; }
+    setPos(x + dx * maxV / mag, y + dy * maxV / mag);
+    return false;
+}
+void Fireball::setPos(double nX, double nY) {
+    x = nX;
+    y = nY;
+    mRect.setCenter(x, y);
+}
+void Fireball::setImage(std::string img) {
+    mImg = img;
+    double cX = mRect.cX(), cY = mRect.cY();
+    mRect = Rect::getMinRect(Game().assets().getAsset(mImg), mSize, mSize);
+    mRect.setCenter(cX, cY);
+}
+void Fireball::setSize(int size) {
+    mRect.resizeFactor((double)size / mSize, true);
+    mSize = size;
+}
+ 
+std::vector<Fireball> FireballHandler::update(WizardContext& wc, Timestep ts) {
+    mTimer -= ts.GetMilliseconds();
+    std::vector<Fireball> vec;
+    for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
+        if (it->update(wc.getSprite(it->mTarget).mRect, ts)) {
+            vec.push_back(*it);
+            it = mFireballs.erase(it);
+            if (it == mFireballs.end()) { break; }
+        }
+    }
+    return vec;
+}
+void FireballHandler::render() {
+    Game g;
+    for (Fireball& f : mFireballs) {
+        Rect r = g.getAbsRect(f.mRect);
+        g.assets().drawTexture(f.getImage(), r, NULL);
+    }
+}
+void FireballHandler::newFireball(double x, double y, Number data) {
+    mTimer = mDelay;
+    Fireball f(x, y);
+    f.mTarget = mTarget;
+    f.mData = data;
+    f.setSize((int)(Game::icon_w / 2));
+    f.setImage(mImg);
+    mFireballs.push_back(f);
+}
+
+// Crystal
 void Crystal::update(WizardContext& wc, Timestep ts) {
 	power = (magic + 1).logBase(10) + 1;
 }
@@ -43,6 +97,7 @@ void Crystal::render(WizardContext& wc) {
 	g.assets().drawTexture("crystal", r, NULL);
 }
 
+// Catalyst
 void Catalyst::update(WizardContext& wc, Timestep ts) {
 	power = (magic ^ .3) + 1;
 }
@@ -52,11 +107,24 @@ void Catalyst::handleEvent(WizardContext& wc, Event& e) {
 void Catalyst::render(WizardContext& wc) {
     Game g;
     Rect r = g.getAbsRect(mRect);
-    std::cout << r << std::endl;
     g.assets().drawTexture("catalyst", r, NULL);
 }
 
-void Wizard::update(WizardContext& wc, Timestep ts) {}
+// Wizard
+void Wizard::update(WizardContext& wc, Timestep ts) {
+    std::vector<Fireball> vec = mFireballs.update(wc, ts);
+    for (Fireball& f : vec) {
+        switch (f.mTarget) {
+            case CRYSTAL:
+                wc.crystal.magic += f.mData;
+                break;
+        }
+    }
+    vec.clear();
+    if (mFireballs.ready()) {
+        mFireballs.newFireball(mRect.cX(), mRect.cY(), power);
+    }
+}
 void Wizard::handleEvent(WizardContext& wc, Event& e) {
 	drag(*this, e);
     wc.catalyst.mRect.setX2(mRect.x);
@@ -66,14 +134,18 @@ void Wizard::render(WizardContext& wc) {
     Game g;
     Rect r = g.getAbsRect(mRect);
     g.assets().drawTexture("wizard", r, NULL);
+    mFireballs.render();
 }
 
-void WizardContext::init(int icon_w) {
+void WizardContext::init() {
     AssetManager am = Game().assets();
-    crystal.mRect = Rect::getMinRect(am.getAsset("crystal"), icon_w * 3 / 2, icon_w * 3 / 2);
+    int w = Game::icon_w * 3 / 2;
+    crystal.mRect = Rect::getMinRect(am.getAsset("crystal"), w, w);
     crystal.mRect.setCenter(0, 0);
-    catalyst.mRect = Rect::getMinRect(am.getAsset("catalyst"), icon_w / 2, icon_w / 2);
-    wizard.mRect = Rect::getMinRect(am.getAsset("wizard"), icon_w, icon_w);
+    w = Game::icon_w / 2;
+    catalyst.mRect = Rect::getMinRect(am.getAsset("catalyst"), w, w);
+    w = Game::icon_w;
+    wizard.mRect = Rect::getMinRect(am.getAsset("wizard"), w, w);
     wizard.mRect.setCenter(0, 0);
 
     crystal.mVisible = true;
@@ -95,4 +167,12 @@ void WizardContext::render() {
     for (Sprite* s : mSprites) {
         if (s->mVisible) { s->render(*this); }
     }
+}
+Sprite& WizardContext::getSprite(int id) {
+    switch (id) {
+        case CATALYST: return catalyst; break;
+        case WIZARD: return wizard; break;
+        default: return crystal; break;
+    }
+    return crystal;
 }
