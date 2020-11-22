@@ -5,8 +5,6 @@
 #include "Game.h"
 #include "Number_unittest.cpp"
 
-Game game;
-
 int main(int argc, char* argv[]) {
     if (false) {
         runTests();
@@ -16,20 +14,20 @@ int main(int argc, char* argv[]) {
     const int FPS = 60;
     const int frameDelay = 1000 / FPS;
 
-    game.init();
+    Game::init();
 
-    while (game.running()) {
-        game.updateTime();
-        game.handleEvents();
-        game.update();
-        game.render();
+    while (Game::running()) {
+        Game::updateTime();
+        Game::handleEvents();
+        Game::update();
+        Game::render();
 
-        int dt = SDL_GetTicks() - game.gameTime();
+        int dt = SDL_GetTicks() - Game::gameTime();
         if (dt < frameDelay) {
             SDL_Delay(frameDelay - dt);
         }
     }
     
-    game.clean();
+    Game::clean();
     return 0;
 }

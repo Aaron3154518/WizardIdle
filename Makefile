@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -I.
+CXXFLAGS = 
 
 INC = include
 BIN = bin
@@ -13,8 +13,8 @@ INCLUDE_PATHS = -I$(INC)/SDL2-2.0.12/$(SDL_INC) -I$(INC)/SDL2_image-2.0.5/$(SDL_
 LIBRARY_PATHS = -L$(INC)/SDL2-2.0.12/$(SDL_LIB) -L$(INC)/SDL2_image-2.0.5/$(SDL_LIB) -L$(INC)/SDL2_ttf-2.0.15/$(SDL_LIB)
 LINKER_FLAGS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
 
-SOURCES = Rect Number Tools AssetManager Game \
-          WizardContext WizardIdle
+SOURCES = Rect Number Tools AssetManager Game Upgrade \
+          Fireball Wizards WizardContext WizardIdle
 OBJECTS = $(patsubst %, $(OBJ)/%.o, $(SOURCES))
 DEPENDS = $(patsubst %, $(OBJ)/%.d, $(SOURCES))
 

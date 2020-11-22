@@ -1,4 +1,5 @@
 #include "AssetManager.h"
+#include "Game.h"
 
 AssetManager::AssetManager() {}
 AssetManager::~AssetManager() {}
@@ -13,7 +14,7 @@ void AssetManager::loadAsset(std::string id, const char* fileName) {
         std::cout << "Successfully loaded asset: " << id << std::endl;
     }
     SDL_Surface* tmpSurface = IMG_Load(fileName);
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(game.renderer(), tmpSurface);
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(Game::renderer(), tmpSurface);
     SDL_FreeSurface(tmpSurface);
     assets.emplace(id, tex);
 }
@@ -66,13 +67,13 @@ SDL_Texture* AssetManager::renderText(std::string fontID, const char* text, cons
         return nullptr;
     }
     SDL_Surface* surface = TTF_RenderText_Blended(font, text, color);
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(game.renderer(), surface);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(Game::renderer(), surface);
     SDL_FreeSurface(surface);
     return texture;
 }
 
 SDL_Texture* AssetManager::renderTextWrapped(std::string fontID, std::string text, const SDL_Color& color,
-    Uint32 bkgrnd, int w, Rect* rect) const {
+    int w, Rect* rect, Uint32 bkgrnd) const {
     TTF_Font* font = getFont(fontID);
     if (font == nullptr) {
         std::cout << "Font: " << fontID << " not loaded" << std::endl;
@@ -133,7 +134,7 @@ SDL_Texture* AssetManager::renderTextWrapped(std::string fontID, std::string tex
         y += lineH;
     }
     lines.clear();
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(game.renderer(), surf);
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(Game::renderer(), surf);
     SDL_FreeSurface(surf);
     return tex;
 }
@@ -143,7 +144,7 @@ void AssetManager::drawTexture(SDL_Texture* tex, Rect& destRect, Rect* boundary)
         std::cout << "Invalid Texture" << std::endl;
         return;
     }
-    Rect screen = game.screen();
+    Rect screen = Game::screen();
     if (boundary == nullptr) {
         boundary = &screen;
     }
@@ -180,11 +181,11 @@ void AssetManager::drawTexture(SDL_Texture* tex, Rect& destRect, Rect* boundary)
         return;
     }
 
-    SDL_RenderCopy(game.renderer(), tex, &texRect, &drawRect);
+    SDL_RenderCopy(Game::renderer(), tex, &texRect, &drawRect);
 }
 
 void AssetManager::drawText(std::string fontID, const char* text, const SDL_Color& color,
-    Rect destRect, Rect* boundary) const {
+    Rect destRect, Rect* boundary) const { 
     SDL_Texture* tex = renderText(fontID, text, color);
     if (tex != nullptr) {
         double cX = destRect.cX(), cY = destRect.cY();

@@ -1,5 +1,4 @@
 #include "Game.h"
-#include "AssetManager.h"
 #include "WizardContext.h"
 
 struct GameStruct {
@@ -58,8 +57,8 @@ void Game::init() {
 
     game.mAssets = AssetManager();
 
-    //game.mAssets->loadFont("smallfont", "assets/times.ttf", -1, textH);
-    game.mAssets.loadFont("largefont", "assets/times.ttf", -1, game.mScreen.h / 10);
+    game.mAssets.loadFont(SMALL_FONT, "assets/times.ttf", -1, game.mScreen.h / 50);
+    game.mAssets.loadFont(LARGE_FONT, "assets/times.ttf", -1, game.mScreen.h / 10);
 
     DIR* assetsDir = opendir("assets/");
     struct dirent* en;
@@ -154,17 +153,27 @@ void Game::setDrawColor(const SDL_Color& c) {
 void Game::resetDrawColor() {
     SDL_SetRenderDrawColor(game.mRenderer, 255, 255, 255, 255);
 }
+void Game::setRenderTarget(SDL_Texture* tex) {
+    if (SDL_SetRenderTarget(game.mRenderer, tex) != 0) {
+        std::cout << "Unable to set render target" << std::endl;
+    }
+}
+void Game::resetRenderTarget() {
+    SDL_SetRenderTarget(game.mRenderer, NULL);
+    resetDrawColor();
+}
 
-SDL_Renderer* Game::renderer() const { return game.mRenderer; }
-const AssetManager& Game::assets() const { return game.mAssets; };
+SDL_Renderer* Game::renderer() { return game.mRenderer; }
+const AssetManager& Game::assets() { return game.mAssets; };
 
-bool Game::running() const { return game.mRunning; }
-Uint32 Game::gameTime() const { return game.mGameTime; }
+bool Game::running() { return game.mRunning; }
+Timestep Game::ts() { return game.mTS; }
+Uint32 Game::gameTime() { return game.mGameTime; }
 
-int Game::maxW() const { return game.mMaxW; }
-int Game::maxH() const { return game.mMaxH; }
-SDL_Point Game::camera() const { return game.mCamera; }
-Rect Game::screen() const { return game.mScreen; }
-Rect Game::getAbsRect(const Rect& r) const {
+int Game::maxW() { return game.mMaxW; }
+int Game::maxH() { return game.mMaxH; }
+SDL_Point Game::camera() { return game.mCamera; }
+Rect Game::screen() { return game.mScreen; }
+Rect Game::getAbsRect(const Rect& r) {
     return Rect(r.x + game.mCamera.x, r.y + game.mCamera.y, r.w, r.h);
 }

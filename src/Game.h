@@ -13,38 +13,41 @@
 #include "Rect.h"
 #include "Number.h"
 #include "Tools.h"
+#include "AssetManager.h"
 
-// Forward Declarations
-class AssetManager;
+// Font identifiers
+constexpr auto SMALL_FONT = "smallfont";
+constexpr auto LARGE_FONT = "largefont";
 
 // Game class
 class Game {
 public:
-    Game() = default;
-    ~Game() = default;
+    static void init();
+    static void clean();
+    static void updateTime();
+    static void handleEvents();
+    static void update();
+    static void render();
 
-    void init();
-    void clean();
-    void updateTime();
-    void handleEvents();
-    void update();
-    void render();
+    static void setDrawColor(const SDL_Color& c);
+    static void resetDrawColor();
 
-    void setDrawColor(const SDL_Color& c);
-    void resetDrawColor();
+    static void setRenderTarget(SDL_Texture* tex);
+    static void resetRenderTarget();
 
     // Getters
-    SDL_Renderer* renderer() const;
-    const AssetManager& assets() const;
+    static SDL_Renderer* renderer();
+    static const AssetManager& assets();
 
-    bool running() const;
-    Uint32 gameTime() const;
+    static bool running();
+    static Timestep ts();
+    static Uint32 gameTime();
 
-    int maxW() const;
-    int maxH() const;
-    SDL_Point camera() const;
-    Rect screen() const;
-    Rect getAbsRect(const Rect& r) const;
+    static int maxW();
+    static int maxH();
+    static SDL_Point camera();
+    static Rect screen();
+    static Rect getAbsRect(const Rect& r);
 
     static int icon_w;
 };
