@@ -19,7 +19,7 @@ public:
     void init (int maxLevel, std::string img, std::string desc);
     virtual void update(Timestep ts) {}
     virtual void levelUp() { ++mLevel; }
-    void render(SDL_Point pos, int w);
+    void render(Rect& r);
     void renderDescription(SDL_Point pos);
 
     virtual std::string getCostString() { return ""; }
@@ -29,8 +29,8 @@ private:
     // Max Level >0: caps at l, =0: not upgradeable, <0: no cap
     int mLevel = 0, mMaxLevel = 0;
 
-    Rect mImgRect, mDescRect;
     std::string mImg = "";
+    Rect mDescRect;
     SDL_Texture* mDesc;
 };
 
@@ -44,13 +44,14 @@ public:
     void handleEvent(Event& e);
     void render();
 
-    void setUpgrades(std::vector<Upgrade>* newList);
+    void setUpgrades(std::vector<Upgrade*>* newList);
     void scroll(double ds);
 
 private:
     bool mDragging = false;
-    double mScroll = 0., mScrollMax = 1e10, mScrollV = 0.;
-    std::vector<Upgrade>* mUpgrades;
+    double mScroll = 0., mScrollMax = 0., mScrollV = 0.;
+    std::vector<Upgrade*>* mUpgrades;
+    std::map<int, Rect> mURects;
     Rect mRect;
     SDL_Texture* mTex;
 

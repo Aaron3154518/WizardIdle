@@ -1,6 +1,6 @@
 #include "Upgrade.h"
 
-constexpr SDL_Color bkgrnd {175,175,175};
+constexpr SDL_Color bkgrnd {175,175,175,175};
 
 // Upgrade
 Upgrade::~Upgrade() {
@@ -10,14 +10,16 @@ Upgrade::~Upgrade() {
 void Upgrade::init(int maxLevel, std::string img, std::string desc) {
     mMaxLevel = maxLevel;
     mImg = img;
-    AssetManager am = Game::assets();
-    mImgRect = Rect::getMinRect(am.getAsset(img), Game::icon_w, Game::icon_w);
-    mDesc = am.renderTextWrapped(SMALL_FONT, desc, BLACK, 1, &mDescRect, toUint(bkgrnd));
+    mDesc = Game::assets().renderTextWrapped(SMALL_FONT, desc,
+            BLACK, Game::icon_w * 2, &mDescRect, toUint(bkgrnd));
 }
 
-void Upgrade::render(SDL_Point pos, int w) {
-    mImgRect.setCenter(pos.x, pos.y);
-    Game::assets().drawTexture(mImg, mImgRect, NULL);
+void Upgrade::render(Rect& r) {
+    SDL_Texture* tex = Game::assets().getAsset(mImg);
+    double cx = r.cX(), cy = r.cY();
+    r = Rect::getMinRect(tex, r.w, r.h);
+    r.setCenter(cx, cy);
+    Game::assets().drawTexture(tex, r, NULL);
 }
 
 void Upgrade::renderDescription(SDL_Point pos) {
@@ -39,18 +41,25 @@ UpgradeManager::~UpgradeManager() {
     if (mTex != nullptr) { SDL_DestroyTexture(mTex); }
 }
 
+static Upgrade u;
 void UpgradeManager::init() {
     mRect = Rect(0, 0, Game::icon_w * 6, Game::icon_w * 2);
     mTex = SDL_CreateTexture(Game::renderer(), SDL_PIXELFORMAT_RGBA8888,
             SDL_TEXTUREACCESS_TARGET, mRect.w, mRect.h);
-    redraw();
+  //  redraw();
+    mUpgrades = new std::vector<Upgrade*>();
+    u.init(1, "fireball", "hello world");
+    for (int i = 0; i < 10; ++i) { mUpgrades->push_back(&u); }
+    setUpgrades(mUpgrades);
+
 }
 
 void UpgradeManager::update(Timestep ts) {
     if (mScrollV != 0) {
         scroll(mScrollV * ts.GetSeconds());
         mScrollV *= pow(.3, ts.GetSeconds());
-        if (abs(mScrollV) < 1.) { mScrollV = 0.; }
+        if (mScroll == 0 || mScroll == mScrollMax ||
+                abs(mScrollV) < 1.) { mScrollV = 0.; }
     } 
 }
 
@@ -72,13 +81,22 @@ void UpgradeManager::render() {
     mRect.setCenterX(Game::screen().cX());
     mRect.y = 0;
     Game::assets().drawTexture(mTex, mRect, NULL);
+    SDL_Point mouse;
+    SDL_GetMouseState(&mouse.x, &mouse.y);
+    SDL_Point localMouse = { mouse.x - mRect.x, mouse.y - mRect.y };
+    for (auto it = mURects.begin(); it != mURects.end(); ++it) {
+        if (SDL_PointInRect(&localMouse, &it->second)) {
+            mUpgrades->at(it->first)->renderDescription(mouse);
+            break;
+        }
+    }
 }
 
-void UpgradeManager::setUpgrades(std::vector<Upgrade>* newList) {
+void UpgradeManager::setUpgrades(std::vector<Upgrade*>* newList) {
     mUpgrades = newList;
     mScroll = mScrollMax = mScrollV = 0.;
     if (newList != nullptr) {
-        mScrollMax = newList->size() * Game::icon_w;
+        mScrollMax = (newList->size() - 1) * Game::icon_w;
     }
     redraw();
 }
@@ -93,65 +111,68 @@ void UpgradeManager::redraw() {
     double scrollFrac = mScroll / Game::icon_w;
     int idx = (int)(scrollFrac + .5);
 
-    std::vector<Rect> frontRects, backRects;
+    std::vector<Rect> backRects;
+    mURects.clear();
     const double xRad = (double)(mRect.w - Game::icon_w) / 2.;
     const double yRad = (double)(mRect.h - Game::icon_w) / 2.;
     double w = 0., dw = 0., x = 0.;
     int sign = -1;
-    bool left = true;
-    auto nextX = [xRad, yRad, &w, &dw, &x, &sign] {
+    bool left = true, front = true;
+    auto nextX = [xRad, yRad, &w, &dw, &x, &sign, &front] {
         double currW = w + dw * abs(x) / xRad;
         Rect r = Rect(0, 0, (int)currW, (int)currW);
-        r.setCenter(x, (dw < 0 ? 1 : -1) * yRad * sqrt(1 - x*x/(xRad*xRad)));
-        x += sign * currW * .6;
-        x = xRad * (w + sign * 2 * x) / (dw + sign * 2 * xRad);
-        if (x * dw < 0) {
-            double dx = dw * sign * 2 * x / (2 * xRad + -sign * dw);
-            x += dx;
+        r.setCenter(x, (front ? 1 : -1) * yRad * sqrt(1 - x*x/(xRad*xRad)));
+        x += sign * currW * (front  ? .6 : .55);
+        x = xRad * (2 * x + sign * w) / (2 * xRad - sign * dw);
+        if (x < 0) {
+            double dx = -2 * dw * abs(x) / (sign * 2 * xRad + dw);
+            x -= dx;
         }
         return r;
     };
 
-    Rect leftRect, middleRect, rightRect;
+    int l = mUpgrades == nullptr ? 0 : mUpgrades->size();
     do {
+        int i = idx;
+        front = true;
         w = Game::icon_w;
         dw = -w / 3.;
         x = (idx - scrollFrac) * Game::icon_w;
-        middleRect = nextX();
-        //if ((left && idx == 0) || (!left && idx == 10)) { continue; }
-        if (left) { leftRect = nextX(); }
-        else { rightRect = nextX(); }
-        while(abs(x) <= abs(xRad)) { frontRects.push_back(nextX()); }
-        w = Game::icon_w / 3;
+        while(abs(x) <= abs(xRad) & 0 <= i && i < l) {
+            mURects[i] = nextX();
+            i += sign;
+        }
+        w /= 3.;
         dw = w;
         x = sign * 2 * xRad - x;
         sign *= -1;
-        while (sign * x <= 0) { backRects.push_back(nextX()); }
+        front = false;
+        while (sign * x <= 0 && 0 <= i && i < l) {
+            backRects.push_back(nextX());
+            i -= sign;
+        }
         left = !left;
     } while (!left);
 
     Game::setRenderTarget(mTex);
     Game::setDrawColor(bkgrnd);
     SDL_RenderFillRect(Game::renderer(), NULL);
-    auto draw = [&] (Rect& r, const SDL_Color& c) {
-        r.shift(mRect.w / 2, mRect.h / 2);
-        Game::setDrawColor(c);
+    double cx = mRect.w / 2, cy = mRect.h / 2;
+    for (Rect& r : backRects) {
+        r.shift(cx, cy);
+        Game::setDrawColor(BLUE);
         SDL_RenderFillRect(Game::renderer(), &r);
         Game::setDrawColor(BLACK);
         SDL_RenderDrawRect(Game::renderer(), &r);
-    };
-    for (auto it = backRects.end(); it != backRects.begin();) { 
-        --it;
-        draw(*it, BLUE);
     }
     Rect r = Rect(0, 0, mRect.h * .9, mRect.h * .9);
-    r.setCenter(mRect.w / 2, mRect.h / 2);
+    r.setCenter(cx, cy);
     Game::setDrawColor(GRAY);
     SDL_RenderFillRect(Game::renderer(), &r);
-    for (Rect& r : frontRects) { draw(r, BLUE); } 
-    draw(leftRect, GREEN);
-    draw(rightRect, GREEN);
-    draw(middleRect, RED);
+    for (auto it = mURects.begin(); it != mURects.end(); ++it) {
+        it->second.shift(cx, cy);
+        mUpgrades->at(it->first)->render(it->second);
+    }
 
     Game::resetRenderTarget();
 }

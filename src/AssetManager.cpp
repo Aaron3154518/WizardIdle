@@ -168,7 +168,8 @@ void AssetManager::drawTexture(SDL_Texture* tex, Rect& destRect, Rect* boundary)
         (int)(destRect.w * (1 - leftFrac - rightFrac)), (int)(destRect.h * (1 - topFrac - botFrac)));
     int w, h;
     if (SDL_QueryTexture(tex, NULL, NULL, &w, &h) != 0) {
-        std::cout << "Unable to query texture size" << std::endl;
+        std::cout << "Unable to query texture size: " 
+            << SDL_GetError() << std::endl;
         return;
     }
     Rect texRect = Rect((int)(w * leftFrac), (int)(h * topFrac),

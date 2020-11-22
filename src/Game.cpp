@@ -57,7 +57,7 @@ void Game::init() {
 
     game.mAssets = AssetManager();
 
-    game.mAssets.loadFont(SMALL_FONT, "assets/times.ttf", -1, game.mScreen.h / 50);
+    game.mAssets.loadFont(SMALL_FONT, "assets/times.ttf", -1, game.mScreen.h / 25);
     game.mAssets.loadFont(LARGE_FONT, "assets/times.ttf", -1, game.mScreen.h / 10);
 
     DIR* assetsDir = opendir("assets/");
@@ -108,14 +108,14 @@ void Game::handleEvents() {
         switch (e.type) {
         case SDL_QUIT:
             game.mRunning = false;
-            break;
+            return;
         case SDL_WINDOWEVENT:
             if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
                 double oldCX = game.mScreen.cX(), oldCY = game.mScreen.cY();
                 game.mScreen.resize(e.window.data1, e.window.data2, false);
                 game.mCamera.x += (int)(game.mScreen.cX() - oldCX);
                 game.mCamera.y += (int)(game.mScreen.cY() - oldCY);
-                //game.mCamera = { -(int)game.mScreen.cX(), -(int)game.mScreen.cY() };
+                return;
             }
             break;
         default:
