@@ -1,5 +1,4 @@
 #include "Fireball.h"
-#include "Wizards.h"
 #include "WizardContext.h"
 
 // Fireball

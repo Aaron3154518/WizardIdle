@@ -4,9 +4,11 @@
 #include <iostream>
 #include <vector>
 
-#include "Definitions.h"
-#include "Tools.h"
-#include "Wizards.h"
+#include "../Tools.h"
+#include "Sprite.h"
+#include "Crystal.h"
+#include "Catalyst.h"
+#include "Wizard.h"
 #include "Upgrade.h"
 
 constexpr int CRYSTAL = 0;

@@ -1,7 +1,5 @@
 #include "WizardContext.h"
-#include "Wizards.h"
-#include "Upgrade.h"
-#include "Game.h"
+#include "../Game.h"
 
 struct WizardData {
     friend class Wizards;

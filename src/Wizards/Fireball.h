@@ -6,11 +6,10 @@
 
 #include <SDL.h>
 
-#include "Definitions.h"
-#include "Rect.h"
-#include "Number.h"
-#include "Tools.h"
-#include "AssetManager.h"
+#include "../Rect.h"
+#include "../Number.h"
+#include "../Tools.h"
+#include "../AssetManager.h"
 
 // Forward Declaration
 class WizardContext;
