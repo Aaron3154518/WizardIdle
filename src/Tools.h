@@ -23,7 +23,7 @@ private:
 
 struct EventButton {
     bool pressed = false, clicked = false;
-    SDL_Point clickPos = { 0,0 };
+    SDL_Point clickPos = { 0,0 }, clickPosGlobal = { 0,0 };
     Uint32 duration = 0;
 };
 

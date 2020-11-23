@@ -4,23 +4,7 @@
 // Wizard Context
 void WizardContext::init() {
     AssetManager am = Game::assets();
-    int w = Game::icon_w * 3 / 2;
-    crystal.mRect = Rect::getMinRect(am.getAsset("crystal"), w, w);
-    w = Game::icon_w / 2;
-    catalyst.mRect = Rect::getMinRect(am.getAsset("catalyst"), w, w);
-    w = Game::icon_w;
-    wizard.mRect = Rect::getMinRect(am.getAsset("wizard"), w, w);
-
-    double x = -crystal.mRect.w * 3 / 2;
-
-    for (Sprite* s : mSprites) {
-         s->mRect.setCenter(x, 0);
-    }
-    crystal.mRect.setCenterX(0);
-
-    crystal.mVisible = true;
-    wizard.mVisible = true;
-
+    for (Sprite* s : mSprites) { s->init(); }
     upgradeManager.init();
 }
 void WizardContext::update(Timestep ts) {
@@ -28,10 +12,10 @@ void WizardContext::update(Timestep ts) {
     for (Sprite* s : mSprites) {
         if (s->mVisible) { s->update(*this, ts); }
     }
-    upgradeManager.update(ts);
+    upgradeManager.update(*this, ts);
 }
 void WizardContext::handleEvent(Event& e) {
-    upgradeManager.handleEvent(e);
+    upgradeManager.handleEvent(*this, e);
     for (auto it = mSprites.end(); it != mSprites.begin();) {
         --it;
         if (e.handled) { return; }

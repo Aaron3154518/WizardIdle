@@ -1,19 +1,19 @@
 #include "Wizards.h"
 #include "WizardContext.h"
 
-void drag(Sprite& s, Event& e);
-void noDrag(Sprite& s, Event& e);
+bool drag(Sprite& s, Event& e);
+bool noDrag(Sprite& s, Event& e);
 
-void drag(Sprite& s, Event& e) {
+bool drag(Sprite& s, Event& e) {
     if (e.left.clicked) {
-        if (!s.mDragging && SDL_PointInRect(&e.globalMouse, &s.mRect)) {
-            // Set upgrade list
-            e.handled = true;
-        }
         s.mDragging = false;
+        if (!s.mDragging && SDL_PointInRect(&e.globalMouse, &s.mRect)) {
+            e.handled = true;
+            return true;
+        }
     }
     else if (e.left.pressed && e.left.duration >= 250 &&
-        SDL_PointInRect(&e.left.clickPos, &s.mRect)) {
+        SDL_PointInRect(&e.left.clickPosGlobal, &s.mRect)) {
         s.mDragging = true;
         e.handled = true;
     }
@@ -22,20 +22,31 @@ void drag(Sprite& s, Event& e) {
         s.mRect.setCenter(e.globalMouse.x, e.globalMouse.y);
         e.handled = true;
     }
+    return false;
 }
-void noDrag(Sprite& s, Event& e) {
+bool noDrag(Sprite& s, Event& e) {
     if (e.left.clicked && SDL_PointInRect(&e.globalMouse, &s.mRect)) {
-        // Set upgrade list
         e.handled = true;
+        return true;
     }
+    return false;
 }
 
 // Crystal
+void Crystal::init() {
+    int w = Game::icon_w * 2;
+    mRect = Rect::getMinRect(Game::assets().getAsset("crystal"), w, w);
+    mRect.setCenter(0., 0.);
+    mVisible = true;
+
+    wizard_u.init();
+    mUpgrades = { &wizard_u };
+}
 void Crystal::update(WizardContext& wc, Timestep ts) {
-	power = (magic + 1).logBase(10) + 1;
+    power = (magic + 1).logBase(10) + 1;
 }
 void Crystal::handleEvent(WizardContext& wc, Event& e) {
-	noDrag(*this, e);
+    if (noDrag(*this, e)) { wc.upgradeManager.setUpgrades(&mUpgrades); }
 }
 void Crystal::render(WizardContext& wc) {
     Rect r = Game::getAbsRect(mRect);
@@ -47,13 +58,23 @@ void Crystal::render(WizardContext& wc) {
     textR.setCenterX(r.cX());
     Game::assets().drawText(LARGE_FONT, ss.str().c_str(), BLACK, textR, NULL);
 }
+void Crystal::WizardU::levelUp(WizardContext& wc) {
+    ++mLevel;
+    bought = true;
+    wc.wizard.mVisible = true;
+}
 
 // Catalyst
+void Catalyst::init() {
+    int w = Game::icon_w * 3 / 4;
+    mRect = Rect::getMinRect(Game::assets().getAsset("catalyst"), w, w);
+    mRect.setCenter(-Game::icon_w * 2, 0.);
+}
 void Catalyst::update(WizardContext& wc, Timestep ts) {
-	power = (magic ^ .3) + 1;
+    power = (magic ^ .3) + 1;
 }
 void Catalyst::handleEvent(WizardContext& wc, Event& e) {
-	noDrag(*this, e);
+    if (noDrag(*this, e)) { wc.upgradeManager.setUpgrades(&mUpgrades); }
 }
 void Catalyst::render(WizardContext& wc) {
     Rect r = Game::getAbsRect(mRect);
@@ -62,6 +83,11 @@ void Catalyst::render(WizardContext& wc) {
 
 // Wizard
 Wizard::Wizard() : mFireballs(FireballHandler(CRYSTAL)) {}
+void Wizard::init() {
+    int w = Game::icon_w;
+    mRect = Rect::getMinRect(Game::assets().getAsset("wizard"), w, w);
+    mRect.setCenter(-Game::icon_w * 2, 0.);
+}
 void Wizard::update(WizardContext& wc, Timestep ts) {
     power = basePower;
     power *= wc.crystal.power;
@@ -80,7 +106,7 @@ void Wizard::update(WizardContext& wc, Timestep ts) {
     }
 }
 void Wizard::handleEvent(WizardContext& wc, Event& e) {
-	drag(*this, e);
+    if (drag(*this, e)) { wc.upgradeManager.setUpgrades(&mUpgrades); }
     wc.catalyst.mRect.setX2(mRect.x);
     wc.catalyst.mRect.setCenterY(mRect.cY());
 }

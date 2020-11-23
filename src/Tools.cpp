@@ -13,7 +13,8 @@ void Event::update(SDL_Event& e) {
         EventButton& eb = getButton(e.button.button);
         eb.pressed = true;
         eb.duration = 0;
-        eb.clickPos = globalMouse;
+        eb.clickPos = mouse;
+        eb.clickPosGlobal = globalMouse;
     }
     break;
     case SDL_MOUSEBUTTONUP:
@@ -21,7 +22,6 @@ void Event::update(SDL_Event& e) {
         EventButton& eb = getButton(e.button.button);
         eb.pressed = false;
         eb.clicked = true;
-        eb.clickPos = globalMouse;
     }
     break;
     case SDL_MOUSEMOTION:

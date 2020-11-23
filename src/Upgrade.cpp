@@ -34,6 +34,13 @@ void Upgrade::renderDescription(SDL_Point pos) {
         mDescRect.setY2(pos.y);
     }
     Game::assets().drawTexture(mDesc, mDescRect, NULL);
+    Rect r;
+    SDL_Texture* tex = Game::assets().renderTextWrapped(SMALL_FONT,
+            getDynamicDescription(), BLACK, Game::icon_w * 2, &r, toUint(bkgrnd));
+    r.y = mDescRect.y2();
+    r.setCenterX(mDescRect.cX());
+    Game::assets().drawTexture(tex, r, NULL);
+    SDL_DestroyTexture(tex);
 }
 
 // Upgrade Manager
@@ -41,29 +48,30 @@ UpgradeManager::~UpgradeManager() {
     if (mTex != nullptr) { SDL_DestroyTexture(mTex); }
 }
 
-static Upgrade u;
 void UpgradeManager::init() {
     mRect = Rect(0, 0, Game::icon_w * 6, Game::icon_w * 2);
     mTex = SDL_CreateTexture(Game::renderer(), SDL_PIXELFORMAT_RGBA8888,
             SDL_TEXTUREACCESS_TARGET, mRect.w, mRect.h);
-  //  redraw();
-    mUpgrades = new std::vector<Upgrade*>();
-    u.init(1, "fireball", "hello world");
-    for (int i = 0; i < 10; ++i) { mUpgrades->push_back(&u); }
-    setUpgrades(mUpgrades);
-
+    redraw();
 }
 
-void UpgradeManager::update(Timestep ts) {
+void UpgradeManager::update(WizardContext& wc, Timestep ts) {
     if (mScrollV != 0) {
         scroll(mScrollV * ts.GetSeconds());
         mScrollV *= pow(.3, ts.GetSeconds());
         if (mScroll == 0 || mScroll == mScrollMax ||
                 abs(mScrollV) < 1.) { mScrollV = 0.; }
-    } 
+    }
+    Game::setRenderTarget(mTex);
+    for (auto it = mURects.begin(); it != mURects.end(); ++it) {
+        Upgrade* u = mUpgrades->at(it->first);
+        Game::setDrawColor(u->maxLevel() ? YELLOW : u->canBuy(wc) ? GREEN : RED);
+        SDL_RenderDrawRect(Game::renderer(), &it->second);
+    }
+    Game::resetRenderTarget();
 }
 
-void UpgradeManager::handleEvent(Event& e) {
+void UpgradeManager::handleEvent(WizardContext& wc, Event& e) {
     if (mDragging) {
         scroll(-e.mouseDx);
         if (e.left.clicked) {
@@ -71,9 +79,25 @@ void UpgradeManager::handleEvent(Event& e) {
             mDragging = false;
         }
         e.handled = true;
-    } else if (e.left.pressed && SDL_PointInRect(&e.mouse, &mRect)) {
-        mScrollV = 0.;
-        mDragging = e.handled = true;
+    } else if (SDL_PointInRect(&e.left.clickPos, &mRect)) {
+        if (e.left.clicked) {
+            SDL_Point pos = { e.mouse.x - mRect.x, e.mouse.y - mRect.y };
+            for (auto it = mURects.begin(); it != mURects.end(); ++it) {
+                if (SDL_PointInRect(&pos, &it->second)) {
+                    Upgrade* u = mUpgrades->at(it->first);
+                    if (u->canBuy(wc)) {
+                        u->levelUp(wc);
+                    }
+                }
+            }
+            e.handled = true;
+        } else if (e.left.pressed) {
+            mScrollV = 0.;
+            if (e.mouseDx != 0 || e.mouseDy != 0) {
+                mDragging = true;
+            }
+            e.handled = true;
+        }
     }
 }
 

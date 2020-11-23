@@ -12,6 +12,7 @@
 #include "Tools.h"
 #include "Fireball.h"
 #include "Game.h"
+#include "Upgrade.h"
 #include "AssetManager.h"
 
 // Forward Declaration
@@ -25,21 +26,39 @@ public:
     Sprite() = default;
     ~Sprite() = default;
 
+    virtual void init() {}
     virtual void update(WizardContext& wc, Timestep ts) {}
     virtual void handleEvent(WizardContext& wc, Event& e) {}
     virtual void render(WizardContext& wc) {}
+protected:
+    std::vector<Upgrade*> mUpgrades;
 };
 
 class Crystal : public Sprite {
 public:
     Number magic, power;
 
-    Crystal() = default;
+    Crystal() { mUpgrades.push_back(&wizard_u); }
     ~Crystal() = default;
 
+    void init();
     void update(WizardContext& wc, Timestep ts);
     void handleEvent(WizardContext& wc, Event& e);
     void render(WizardContext& wc);
+private:
+    class WizardU : public Upgrade {
+    public:
+        WizardU() : Upgrade([&]() {return bought ? "Bought" : "Free"; }) {};
+        ~WizardU() = default;
+
+        void init() { Upgrade::init(1, "wizard", "Unlocks Wizard"); }
+        void levelUp(WizardContext& wc);
+    private:
+        bool bought = false;
+        Number cost;
+    };
+public:
+    WizardU wizard_u;
 };
 class Catalyst : public Sprite {
 public:
@@ -48,6 +67,7 @@ public:
     Catalyst() = default;
     ~Catalyst() = default;
 
+    void init();
     void update(WizardContext& wc, Timestep ts);
     void handleEvent(WizardContext& wc, Event& e);
     void render(WizardContext& wc);
@@ -66,6 +86,7 @@ public:
     Wizard();
     ~Wizard() = default;
 
+    void init();
     void update(WizardContext& wc, Timestep ts);
     void handleEvent(WizardContext& wc, Event& e);
     void render(WizardContext& wc);
