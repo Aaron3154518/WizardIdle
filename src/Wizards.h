@@ -11,8 +11,8 @@
 #include "Number.h"
 #include "Tools.h"
 #include "Fireball.h"
-#include "Game.h"
 #include "Upgrade.h"
+#include "Game.h"
 #include "AssetManager.h"
 
 // Forward Declaration
@@ -27,9 +27,12 @@ public:
     ~Sprite() = default;
 
     virtual void init() {}
-    virtual void update(WizardContext& wc, Timestep ts) {}
-    virtual void handleEvent(WizardContext& wc, Event& e) {}
-    virtual void render(WizardContext& wc) {}
+    virtual void update(Timestep ts) {}
+    virtual void handleEvent(Event& e) {}
+    virtual void render() {}
+
+    virtual std::string getImage() { return ""; }
+    std::vector<Upgrade*>& getUpgrades() { return mUpgrades; }
 protected:
     std::vector<Upgrade*> mUpgrades;
 };
@@ -38,27 +41,36 @@ class Crystal : public Sprite {
 public:
     Number magic, power;
 
-    Crystal() { mUpgrades.push_back(&wizard_u); }
+    Crystal() = default;
     ~Crystal() = default;
 
     void init();
-    void update(WizardContext& wc, Timestep ts);
-    void handleEvent(WizardContext& wc, Event& e);
-    void render(WizardContext& wc);
+    void update(Timestep ts);
+    void handleEvent(Event& e);
+    void render();
+
+    std::string getImage() { return "crystal"; }
 private:
+    Number cost;
     class WizardU : public Upgrade {
     public:
-        WizardU() : Upgrade([&]() {return bought ? "Bought" : "Free"; }) {};
-        ~WizardU() = default;
+        WizardU() : Upgrade([&]() {return mLevel == 1 ? "Bought" : "Free"; }) {}
 
-        void init() { Upgrade::init(1, "wizard", "Unlocks Wizard"); }
-        void levelUp(WizardContext& wc);
-    private:
-        bool bought = false;
-        Number cost;
+        void init() { Upgrade::init(1, "wizard", "Unlock Wizard\nWizard shoots fireballs at the crystal"); }
+        void levelUp();
+    };
+    class CatalystU : public Upgrade {
+    public:
+        CatalystU();
+
+        void init() { Upgrade::init(1, "catalyst", "Unlock Catalyst\nThe wizard can shoot fireballs "
+                "into the catalyst to fill it up. Use catalyst power to power up your wizards!"); }
+        void levelUp();
+        bool canBuy();
     };
 public:
     WizardU wizard_u;
+    CatalystU catalyst_u;
 };
 class Catalyst : public Sprite {
 public:
@@ -68,9 +80,11 @@ public:
     ~Catalyst() = default;
 
     void init();
-    void update(WizardContext& wc, Timestep ts);
-    void handleEvent(WizardContext& wc, Event& e);
-    void render(WizardContext& wc);
+    void update(Timestep ts);
+    void handleEvent(Event& e);
+    void render();
+
+    std::string getImage() { return "catalyst"; }
 
     void addMagic(Number& add) {
         magic = Number::getMin(capacity, magic + add);
@@ -87,9 +101,11 @@ public:
     ~Wizard() = default;
 
     void init();
-    void update(WizardContext& wc, Timestep ts);
-    void handleEvent(WizardContext& wc, Event& e);
-    void render(WizardContext& wc);
+    void update(Timestep ts);
+    void handleEvent(Event& e);
+    void render();
+
+    std::string getImage() { return "wizard"; }
 private:
     FireballHandler mFireballs;
 };

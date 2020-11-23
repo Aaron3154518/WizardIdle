@@ -15,8 +15,6 @@ private:
     Uint32 mGameTime = 0;
     Timestep mTS;
     Event mEvent;
-
-    WizardContext mContext;
 };
 
 static GameStruct game;
@@ -74,7 +72,7 @@ void Game::init() {
     }
 
     icon_w = (int)(fmin(game.mMaxW, game.mMaxH) / 15);
-    game.mContext.init();
+    Wizards::init();
 }
 void Game::clean() {
     // If we call clean, the game must end
@@ -92,7 +90,7 @@ void Game::updateTime() {
 }
 void Game::update() {
     //std::cout << "Update" << std::endl;
-    game.mContext.update(game.mTS);
+    Wizards::update(game.mTS);
 }
 void Game::handleEvents() {
     //std::cout << "Events" << std::endl;
@@ -125,7 +123,7 @@ void Game::handleEvents() {
     }
     game.mEvent.handled = false;
     if (!game.mDragging) {
-        game.mContext.handleEvent(game.mEvent);
+        Wizards::handleEvent(game.mEvent);
     }
     if (!game.mEvent.handled) {
         if (game.mEvent.left.clicked) {
@@ -143,7 +141,7 @@ void Game::handleEvents() {
 void Game::render() {
     //std::cout << "Renderer" << std::endl;
     SDL_RenderClear(game.mRenderer);
-    game.mContext.render();
+    Wizards::render();
     SDL_RenderPresent(game.mRenderer);
 }
 

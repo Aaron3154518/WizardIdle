@@ -26,11 +26,11 @@ void Fireball::setSize(int size) {
     mSize = size;
 }
  
-std::vector<Fireball> FireballHandler::update(WizardContext& wc, Timestep ts) {
+std::vector<Fireball> FireballHandler::update(Timestep ts) {
     mTimer -= ts.GetMilliseconds();
     std::vector<Fireball> vec;
     for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
-        if (it->update(wc.getSprite(it->mTarget).mRect, ts)) {
+        if (it->update(Wizards::getSprite(it->mTarget).mRect, ts)) {
             vec.push_back(*it);
             it = mFireballs.erase(it);
             if (it == mFireballs.end()) { break; }

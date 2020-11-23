@@ -1,4 +1,5 @@
 #include "Upgrade.h"
+#include "WizardContext.h"
 
 constexpr SDL_Color bkgrnd {175,175,175,175};
 
@@ -11,7 +12,7 @@ void Upgrade::init(int maxLevel, std::string img, std::string desc) {
     mMaxLevel = maxLevel;
     mImg = img;
     mDesc = Game::assets().renderTextWrapped(SMALL_FONT, desc,
-            BLACK, Game::icon_w * 2, &mDescRect, toUint(bkgrnd));
+            BLACK, Game::icon_w * 3, &mDescRect, toUint(bkgrnd));
 }
 
 void Upgrade::render(Rect& r) {
@@ -36,7 +37,7 @@ void Upgrade::renderDescription(SDL_Point pos) {
     Game::assets().drawTexture(mDesc, mDescRect, NULL);
     Rect r;
     SDL_Texture* tex = Game::assets().renderTextWrapped(SMALL_FONT,
-            getDynamicDescription(), BLACK, Game::icon_w * 2, &r, toUint(bkgrnd));
+            getInfo(), BLACK, mDescRect.w, &r, toUint(bkgrnd));
     r.y = mDescRect.y2();
     r.setCenterX(mDescRect.cX());
     Game::assets().drawTexture(tex, r, NULL);
@@ -52,26 +53,19 @@ void UpgradeManager::init() {
     mRect = Rect(0, 0, Game::icon_w * 6, Game::icon_w * 2);
     mTex = SDL_CreateTexture(Game::renderer(), SDL_PIXELFORMAT_RGBA8888,
             SDL_TEXTUREACCESS_TARGET, mRect.w, mRect.h);
-    redraw();
+    setSprite(CRYSTAL);
 }
 
-void UpgradeManager::update(WizardContext& wc, Timestep ts) {
+void UpgradeManager::update(Timestep ts) {
     if (mScrollV != 0) {
         scroll(mScrollV * ts.GetSeconds());
         mScrollV *= pow(.3, ts.GetSeconds());
         if (mScroll == 0 || mScroll == mScrollMax ||
                 abs(mScrollV) < 1.) { mScrollV = 0.; }
     }
-    Game::setRenderTarget(mTex);
-    for (auto it = mURects.begin(); it != mURects.end(); ++it) {
-        Upgrade* u = mUpgrades->at(it->first);
-        Game::setDrawColor(u->maxLevel() ? YELLOW : u->canBuy(wc) ? GREEN : RED);
-        SDL_RenderDrawRect(Game::renderer(), &it->second);
-    }
-    Game::resetRenderTarget();
 }
 
-void UpgradeManager::handleEvent(WizardContext& wc, Event& e) {
+void UpgradeManager::handleEvent(Event& e) {
     if (mDragging) {
         scroll(-e.mouseDx);
         if (e.left.clicked) {
@@ -80,13 +74,14 @@ void UpgradeManager::handleEvent(WizardContext& wc, Event& e) {
         }
         e.handled = true;
     } else if (SDL_PointInRect(&e.left.clickPos, &mRect)) {
+        auto upgrades = getUpgrades();
         if (e.left.clicked) {
             SDL_Point pos = { e.mouse.x - mRect.x, e.mouse.y - mRect.y };
             for (auto it = mURects.begin(); it != mURects.end(); ++it) {
                 if (SDL_PointInRect(&pos, &it->second)) {
-                    Upgrade* u = mUpgrades->at(it->first);
-                    if (u->canBuy(wc)) {
-                        u->levelUp(wc);
+                    Upgrade* u = upgrades.at(it->first);
+                    if (u->canBuy()) {
+                        u->levelUp();
                     }
                 }
             }
@@ -102,26 +97,33 @@ void UpgradeManager::handleEvent(WizardContext& wc, Event& e) {
 }
 
 void UpgradeManager::render() {
-    mRect.setCenterX(Game::screen().cX());
     mRect.y = 0;
+    mRect.setCenterX(Game::screen().w / 2);
     Game::assets().drawTexture(mTex, mRect, NULL);
     SDL_Point mouse;
     SDL_GetMouseState(&mouse.x, &mouse.y);
     SDL_Point localMouse = { mouse.x - mRect.x, mouse.y - mRect.y };
+    auto upgrades = getUpgrades();
+    Game::setRenderTarget(mTex);
+    for (auto it = mURects.begin(); it != mURects.end(); ++it) {
+        Upgrade* u = upgrades.at(it->first);
+        Game::setDrawColor(u->maxLevel() ? YELLOW : u->canBuy() ? GREEN : RED);
+        SDL_RenderDrawRect(Game::renderer(), &it->second);
+    }
+    Game::resetRenderTarget();
     for (auto it = mURects.begin(); it != mURects.end(); ++it) {
         if (SDL_PointInRect(&localMouse, &it->second)) {
-            mUpgrades->at(it->first)->renderDescription(mouse);
+            upgrades.at(it->first)->renderDescription(mouse);
             break;
         }
     }
 }
 
-void UpgradeManager::setUpgrades(std::vector<Upgrade*>* newList) {
-    mUpgrades = newList;
-    mScroll = mScrollMax = mScrollV = 0.;
-    if (newList != nullptr) {
-        mScrollMax = (newList->size() - 1) * Game::icon_w;
-    }
+void UpgradeManager::setSprite(int id) {
+    mSelected = id;
+    mSize = Wizards::getSprite(id).getUpgrades().size();
+    mScroll = mScrollV = 0.;
+    mScrollMax = (mSize - 1) * Game::icon_w;
     redraw();
 }
 
@@ -129,6 +131,18 @@ void UpgradeManager::scroll(double ds) {
     double oldScroll = mScroll;
     mScroll = std::min(std::max(mScroll + ds, 0.), mScrollMax);
     if (mScroll != oldScroll) { redraw(); }
+}
+
+std::vector<Upgrade*> UpgradeManager::getUpgrades() {
+    std::vector<Upgrade*> upgrades = Wizards::getSprite(mSelected).getUpgrades();
+    int size = upgrades.size();
+    if (mSize != size) {
+        mSize = size;
+        mScrollMax = (mSize - 1) * Game::icon_w;
+        if (mScroll > mScrollMax) { mScroll = mScrollMax; }
+        redraw();
+    }
+    return upgrades;
 }
 
 void UpgradeManager::redraw() {
@@ -155,14 +169,13 @@ void UpgradeManager::redraw() {
         return r;
     };
 
-    int l = mUpgrades == nullptr ? 0 : mUpgrades->size();
     do {
         int i = idx;
         front = true;
         w = Game::icon_w;
         dw = -w / 3.;
         x = (idx - scrollFrac) * Game::icon_w;
-        while(abs(x) <= abs(xRad) & 0 <= i && i < l) {
+        while(abs(x) <= abs(xRad) & 0 <= i && i < mSize) {
             mURects[i] = nextX();
             i += sign;
         }
@@ -171,7 +184,7 @@ void UpgradeManager::redraw() {
         x = sign * 2 * xRad - x;
         sign *= -1;
         front = false;
-        while (sign * x <= 0 && 0 <= i && i < l) {
+        while (sign * x <= 0 && 0 <= i && i < mSize) {
             backRects.push_back(nextX());
             i -= sign;
         }
@@ -189,13 +202,15 @@ void UpgradeManager::redraw() {
         Game::setDrawColor(BLACK);
         SDL_RenderDrawRect(Game::renderer(), &r);
     }
-    Rect r = Rect(0, 0, mRect.h * .9, mRect.h * .9);
+    Sprite& s = Wizards::getSprite(mSelected);
+    SDL_Texture* tex = Game::assets().getAsset(s.getImage());
+    Rect r = Rect::getMinRect(tex, mRect.h * .9, mRect.h * .9);
     r.setCenter(cx, cy);
-    Game::setDrawColor(GRAY);
-    SDL_RenderFillRect(Game::renderer(), &r);
+    SDL_RenderCopy(Game::renderer(), tex, NULL, &r);
+    auto upgrades = s.getUpgrades();
     for (auto it = mURects.begin(); it != mURects.end(); ++it) {
         it->second.shift(cx, cy);
-        mUpgrades->at(it->first)->render(it->second);
+        upgrades.at(it->first)->render(it->second);
     }
 
     Game::resetRenderTarget();

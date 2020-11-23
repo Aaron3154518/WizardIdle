@@ -46,7 +46,7 @@ public:
     FireballHandler(int target) : mTarget(target) {}
     ~FireballHandler() = default;
 
-    std::vector<Fireball> update(WizardContext& wc, Timestep ts);
+    std::vector<Fireball> update(Timestep ts);
     void render();
 
     void setDelay(int delay) { mTimer = mDelay = delay; }

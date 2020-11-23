@@ -12,32 +12,29 @@
 #include "Game.h"
 #include "AssetManager.h"
 
-// Forward Declaration
-class WizardContext;
-
-typedef std::function<std::string()> StringFunc;
+typedef std::function<std::string()> InfoFunc;
 
 class Upgrade {
 public:
     Upgrade() = default;
-    Upgrade(StringFunc func) : getDynamicDescription(func) {}
+    Upgrade(InfoFunc func) : getInfo(func) {}
     ~Upgrade();
 
     void init (int maxLevel, std::string img, std::string desc);
-    virtual void update(WizardContext& wc, Timestep ts) {}
-    virtual void levelUp(WizardContext& wc) { ++mLevel; }
+    virtual void update(Timestep ts) {}
+    virtual void levelUp() { ++mLevel; }
     void render(Rect& r);
     void renderDescription(SDL_Point pos);
+    bool maxLevel() { return mLevel == mMaxLevel; }
 
-    virtual bool maxLevel() { return mLevel == mMaxLevel; }
-    virtual bool canBuy(WizardContext& wc) { return mMaxLevel == -1 || mLevel < mMaxLevel; }
+    virtual bool canBuy() { return mMaxLevel == -1 || mLevel < mMaxLevel; }
 protected:
     // Max Level >0: caps at l, =0: not upgradeable, <0: no cap
     int mLevel = 0, mMaxLevel = 0;
 
     std::string mImg = "";
-    StringFunc getDynamicDescription = [&]() { return "No Text Provided"; };
 private:
+    InfoFunc getInfo = [&]() { return "No Text Provided"; };
     Rect mDescRect;
     SDL_Texture* mDesc;
 };
@@ -48,22 +45,23 @@ public:
     ~UpgradeManager();
 
     void init();
-    void update(WizardContext& wc, Timestep ts);
-    void handleEvent(WizardContext& wc, Event& e);
+    void update(Timestep ts);
+    void handleEvent(Event& e);
     void render();
 
-    void setUpgrades(std::vector<Upgrade*>* newList);
+    void setSprite(int id);
     void scroll(double ds);
 
 private:
     bool mDragging = false;
     double mScroll = 0., mScrollMax = 0., mScrollV = 0.;
-    std::vector<Upgrade*>* mUpgrades;
+    int mSelected = -1, mSize = 0;
     std::map<int, Rect> mURects;
     Rect mRect;
     SDL_Texture* mTex;
 
     void redraw();
+    std::vector<Upgrade*> getUpgrades();
 };
 
 #endif /* UPGRADES_h */

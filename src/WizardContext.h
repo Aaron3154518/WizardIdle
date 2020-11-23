@@ -6,7 +6,6 @@
 
 #include "Definitions.h"
 #include "Tools.h"
-#include "AssetManager.h"
 #include "Wizards.h"
 #include "Upgrade.h"
 
@@ -14,24 +13,19 @@ constexpr int CRYSTAL = 0;
 constexpr int CATALYST = 1;
 constexpr int WIZARD = 2;
 
-class WizardContext {
+class Wizards {
 public:
-    UpgradeManager upgradeManager;
-
-    Crystal crystal;
-    Catalyst catalyst;
-    Wizard wizard;
-
-    WizardContext() = default;
-    ~WizardContext() = default;
-
-    void init();
-    void update(Timestep ts);
-    void handleEvent(Event& e);
-    void render();
-    Sprite& getSprite(int id);
-private:
-    std::vector<Sprite*> mSprites = { &crystal, &catalyst, &wizard };
+    static void init();
+    static void update(Timestep ts);
+    static void handleEvent(Event& e);
+    static void render();
+    
+    // Getters
+    static Sprite& getSprite(int id);
+    static Crystal& crystal();
+    static Catalyst& catalyst();
+    static Wizard& wizard();
+    static UpgradeManager& upgradeManager();
 };
 
 #endif /* WIZARDCONTEXT_h */

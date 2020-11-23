@@ -1,38 +1,59 @@
 #include "WizardContext.h"
+#include "Wizards.h"
+#include "Upgrade.h"
 #include "Game.h"
 
-// Wizard Context
-void WizardContext::init() {
-    AssetManager am = Game::assets();
-    for (Sprite* s : mSprites) { s->init(); }
-    upgradeManager.init();
+struct WizardData {
+    friend class Wizards;
+private:
+    UpgradeManager upgradeManager;
+
+    Crystal crystal;
+    Catalyst catalyst;
+    Wizard wizard;
+
+    bool initialized = false;
+    std::vector<Sprite*> mSprites = { &crystal, &catalyst, &wizard };
+};
+
+WizardData wc;
+
+void Wizards::init() {
+    if ( wc.initialized ) { return; }
+    for (Sprite* s : wc.mSprites) { s->init(); }
+    wc.upgradeManager.init();
 }
-void WizardContext::update(Timestep ts) {
+void Wizards::update(Timestep ts) {
     // Custom update order? (or just custom update no function calls)
-    for (Sprite* s : mSprites) {
-        if (s->mVisible) { s->update(*this, ts); }
+    for (Sprite* s : wc.mSprites) {
+        if (s->mVisible) { s->update(ts); }
     }
-    upgradeManager.update(*this, ts);
+    wc.upgradeManager.update(ts);
 }
-void WizardContext::handleEvent(Event& e) {
-    upgradeManager.handleEvent(*this, e);
-    for (auto it = mSprites.end(); it != mSprites.begin();) {
+void Wizards::handleEvent(Event& e) {
+    wc.upgradeManager.handleEvent(e);
+    for (auto it = wc.mSprites.end(); it != wc.mSprites.begin();) {
         --it;
         if (e.handled) { return; }
-        if ((*it)->mVisible) { (*it)->handleEvent(*this, e); }
+        if ((*it)->mVisible) { (*it)->handleEvent(e); }
     }
 }
-void WizardContext::render() {
-    for (Sprite* s : mSprites) {
-        if (s->mVisible) { s->render(*this); }
+void Wizards::render() {
+    for (Sprite* s : wc.mSprites) {
+        if (s->mVisible) { s->render(); }
     }
-    upgradeManager.render();
+    wc.upgradeManager.render();
 }
-Sprite& WizardContext::getSprite(int id) {
+
+// Getters
+Sprite& Wizards::getSprite(int id) {
     switch (id) {
-        case CATALYST: return catalyst; break;
-        case WIZARD: return wizard; break;
-        default: return crystal; break;
+        case CATALYST: return wc.catalyst; break;
+        case WIZARD: return wc.wizard; break;
+        default: return wc.crystal; break;
     }
-    return crystal;
 }
+Crystal& Wizards::crystal() { return wc.crystal; }
+Catalyst& Wizards::catalyst() { return wc.catalyst; }
+Wizard& Wizards::wizard() { return wc.wizard; }
+UpgradeManager& Wizards::upgradeManager() { return wc.upgradeManager; }
