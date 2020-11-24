@@ -47,6 +47,18 @@ static Uint32 toUint(SDL_Color c) {
 #endif
 }
 
+constexpr int TOPLEFT = 0, CENTER = 1, BOTRIGHT = 2;
+
+struct TextData {
+    std::string fontId = "", text = "";
+    SDL_Color color = BLACK;
+    double x = 0., y = 0.;
+    int xMode = TOPLEFT, yMode = TOPLEFT;
+    int w = 0, h = 0; // <= 0 for unbounded
+
+    void setRectPos(Rect& r);
+};
+
 class AssetManager {
 public:
     AssetManager();
@@ -57,14 +69,12 @@ public:
 
     SDL_Texture* getAsset(std::string id) const { return assets.find(id) == assets.end() ? assets.at("placeholder") : assets.at(id); }
     TTF_Font* getFont(std::string id) const { return fonts.find(id) == fonts.end() ? nullptr : fonts.at(id); }
-    SDL_Texture* renderText(std::string fontID, const char* text, const SDL_Color& color) const;
-    SDL_Texture* renderTextWrapped(std::string fontID, std::string text, const SDL_Color& color,
-    	int w, Rect* rect, Uint32 bkgrnd = -1) const;
+    SDL_Texture* renderText(TextData& data, Rect& rect) const;
+    SDL_Texture* renderTextWrapped(TextData& data, Rect& rect, Uint32 bkgrnd=-1) const;
     void drawTexture(SDL_Texture* tex, Rect& destRect, Rect* boundary) const;
     void drawTexture(std::string id, Rect& destRect, Rect* boundary) const { drawTexture(getAsset(id), destRect, boundary); }
-    void drawText(std::string fontID, const char* text, const SDL_Color& color, Rect destRect,
-    	Rect* boundary) const;
-
+    void drawText(TextData& data, Rect* boundary) const;
+    void drawTextWrapped(TextData& data, Rect* boundary, Uint32 bkgrnd=-1) const;
 private:
     std::map<std::string, SDL_Texture*> assets;
     std::map<std::string, TTF_Font*> fonts;

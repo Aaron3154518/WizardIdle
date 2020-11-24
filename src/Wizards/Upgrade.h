@@ -16,6 +16,8 @@ typedef std::function<std::string()> InfoFunc;
 
 class Upgrade {
 public:
+    bool updateMe = false;
+
     Upgrade() = default;
     Upgrade(InfoFunc func) : getInfo(func) {}
     ~Upgrade();
@@ -34,6 +36,7 @@ protected:
 
     std::string mImg = "";
 private:
+    TextData infoText;
     InfoFunc getInfo = [&]() { return "No Text Provided"; };
     Rect mDescRect;
     SDL_Texture* mDesc;
@@ -56,11 +59,12 @@ private:
     bool mDragging = false;
     double mScroll = 0., mScrollMax = 0., mScrollV = 0.;
     int mSelected = -1, mSize = 0;
-    std::map<int, Rect> mURects;
+    std::map<int, Rect> mFrontRects, mBackRects;
     Rect mRect;
     SDL_Texture* mTex;
 
     void redraw();
+    void calcRects();
     std::vector<Upgrade*> getUpgrades();
 };
 

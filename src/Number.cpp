@@ -43,23 +43,25 @@ void Number::copy(const Number& other) {
 
 void Number::setValue(double val) {
     value = val;
+    zero = val == 0.;
     balance();
 }
 
 void Number::setValue(double val, int exp) {
     value = val;
     exponent = exp;
+    zero = val == 0.;
     balance();
 }
 
 void Number::balance() {
     if (value == 0.) { zero = true; }
     if (zero) { return; }
-    while (abs(value) >= 10) {
+    while (std::abs(value) >= 10) {
         value *= .1;
         exponent++;
     }
-    while (abs(value) < 1) {
+    while (std::abs(value) < 1) {
         value *= 10.;
         exponent--;
     }
@@ -145,7 +147,7 @@ Number Number::logBase(double base) const {
 // Comparison Operators
 bool Number::operator ==(const Number& rhs) const {
     return (zero && rhs.zero) || (!zero && !rhs.zero &&
-        abs(value - rhs.value) < Pows::getPow(-TOLERANCE) && exponent == rhs.exponent);
+        std::abs(value - rhs.value) < Pows::getPow(-TOLERANCE) && exponent == rhs.exponent);
 }
 
 bool operator <(const Number& lhs, const Number& rhs) {

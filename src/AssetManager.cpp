@@ -1,6 +1,19 @@
 #include "AssetManager.h"
 #include "Game.h"
 
+void TextData::setRectPos(Rect& r) {
+    switch(xMode) {
+        case CENTER: r.setCenterX(x); break;
+        case BOTRIGHT: r.setX2(x); break;
+        default: r.x = x; break;
+    }
+    switch(yMode) {
+        case CENTER: r.setCenterY(y); break;
+        case BOTRIGHT: r.setY2(y); break;
+        default: r.y = y; break;
+    }
+}
+
 AssetManager::AssetManager() {}
 AssetManager::~AssetManager() {}
 
@@ -60,47 +73,51 @@ void AssetManager::loadFont(std::string id, const char* fileName, int maxW, int 
     }
 }
 
-SDL_Texture* AssetManager::renderText(std::string fontID, const char* text, const SDL_Color& color) const {
-    TTF_Font* font = getFont(fontID);
+SDL_Texture* AssetManager::renderText(TextData& data, Rect& rect) const {
+    TTF_Font* font = getFont(data.fontId);
     if (font == nullptr) {
-        std::cout << "Font: " << fontID << " not loaded" << std::endl;
+        std::cout << "Font: " << data.fontId << " not loaded" << std::endl;
         return nullptr;
     }
-    SDL_Surface* surface = TTF_RenderText_Blended(font, text, color);
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(Game::renderer(), surface);
+    SDL_Surface* surface = TTF_RenderText_Blended(font, data.text.c_str(), data.color);
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(Game::renderer(), surface);
     SDL_FreeSurface(surface);
-    return texture;
+    rect = Rect::getMinRect(tex, data.w, data.h);
+    data.setRectPos(rect);
+    return tex;
 }
 
-SDL_Texture* AssetManager::renderTextWrapped(std::string fontID, std::string text, const SDL_Color& color,
-    int w, Rect* rect, Uint32 bkgrnd) const {
-    TTF_Font* font = getFont(fontID);
+SDL_Texture* AssetManager::renderTextWrapped(TextData& data, Rect& rect, Uint32 bkgrnd) const {
+    TTF_Font* font = getFont(data.fontId);
     if (font == nullptr) {
-        std::cout << "Font: " << fontID << " not loaded" << std::endl;
+        std::cout << "Font: " << data.fontId << " not loaded" << std::endl;
         return nullptr;
     }
+    if (data.w == 0) { return nullptr; }
 
     std::vector<std::string> lines;
     std::stringstream line_ss, word_ss;
     int spaceW;
     TTF_SizeText(font, " ", &spaceW, NULL);
     int width = 0;
-    for (char ch : text + '\n') {
+    int maxW = data.w;
+    for (char ch : data.text + '\n') {
         if (ch == ' ' || ch == '\n') {
             std::string word = word_ss.str();
             word_ss.str("");
             int wordW;
             TTF_SizeText(font, word.c_str(), &wordW, NULL);
-            if (width + wordW < w) {
+            if (width + wordW < data.w) {
                 if (width != 0) { line_ss << ' '; }
                 line_ss << word;
                 width += wordW + spaceW;
             }
             else {
-                lines.push_back(line_ss.str());
+                if (line_ss.str() != "") { lines.push_back(line_ss.str()); }
                 line_ss.str("");
                 line_ss << word;
                 width = wordW + spaceW;
+                if (wordW > maxW) { maxW = wordW; }
             }
             if (ch == '\n') {
                 lines.push_back(line_ss.str());
@@ -115,13 +132,14 @@ SDL_Texture* AssetManager::renderTextWrapped(std::string fontID, std::string tex
 
     int lineH;
     TTF_SizeText(font, "|", NULL, &lineH);
-    *rect = Rect(0, 0, w, (int)(lineH * lines.size()));
-    SDL_Surface* surf = SDL_CreateRGBSurface(0, rect->w, rect->h, 32, rmask, gmask, bmask, amask);
+    rect = Rect(0, 0, maxW, (int)(lineH * lines.size()));
+    data.setRectPos(rect);
+    SDL_Surface* surf = SDL_CreateRGBSurface(0, rect.w, rect.h, 32, rmask, gmask, bmask, amask);
     if (bkgrnd != -1) { SDL_FillRect(surf, NULL, bkgrnd); }
-    int x = w / 2, y = lineH / 2;
+    int x = maxW / 2, y = lineH / 2;
     for (std::string line : lines) {
         if (line == "") { y += lineH; continue; }
-        SDL_Surface* lineSurf = TTF_RenderText_Blended(font, line.c_str(), color);
+        SDL_Surface* lineSurf = TTF_RenderText_Blended(font, line.c_str(), data.color);
         if (lineSurf != nullptr) {
             Rect lineRect = Rect(0, 0, lineSurf->w, lineSurf->h);
             lineRect.setCenter(x, y);
@@ -185,14 +203,20 @@ void AssetManager::drawTexture(SDL_Texture* tex, Rect& destRect, Rect* boundary)
     SDL_RenderCopy(Game::renderer(), tex, &texRect, &drawRect);
 }
 
-void AssetManager::drawText(std::string fontID, const char* text, const SDL_Color& color,
-    Rect destRect, Rect* boundary) const { 
-    SDL_Texture* tex = renderText(fontID, text, color);
+void AssetManager::drawText(TextData& data, Rect* boundary) const {
+    Rect r;
+    SDL_Texture* tex = renderText(data, r);
     if (tex != nullptr) {
-        double cX = destRect.cX(), cY = destRect.cY();
-        destRect = Rect::getMinRect(tex, destRect.w, destRect.h);
-        destRect.setCenter(cX, cY);
-        drawTexture(tex, destRect, boundary);
+        drawTexture(tex, r, boundary);
+        SDL_DestroyTexture(tex);
+    }
+}
+
+void AssetManager::drawTextWrapped(TextData& data, Rect* boundary, Uint32 bkgrnd) const {
+    Rect r;
+    SDL_Texture* tex = renderTextWrapped(data, r, bkgrnd);
+    if (tex != nullptr) {
+        drawTexture(tex, r, boundary);
         SDL_DestroyTexture(tex);
     }
 }

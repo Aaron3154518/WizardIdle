@@ -8,6 +8,12 @@ void Crystal::init() {
     mRect.setCenter(0., 0.);
     mVisible = true;
 
+    magicText.fontId = LARGE_FONT;
+    magicText.color = PURPLE;
+    magicText.xMode = CENTER;
+    magicText.yMode = BOTRIGHT;
+    magicText.w = magicText.h = 0;
+
     mult_u.init();
     wizard_u.init();
     catalyst_u.init();
@@ -24,10 +30,9 @@ void Crystal::render() {
     Game::assets().drawTexture(getImage(), r, NULL);
     std::stringstream ss;
     ss << magic << "M";
-    Rect textR = Rect(0, 0, Game::icon_w * 3, Game::icon_w * 1.5);
-    textR.setY2(r.y);
-    textR.setCenterX(r.cX());
-    Game::assets().drawText(LARGE_FONT, ss.str().c_str(), BLACK, textR, NULL);
+    magicText.x = r.cX(); magicText.y = r.y;
+    magicText.text = ss.str();
+    Game::assets().drawText(magicText, NULL);
 }
 
 // Mult Upgrade

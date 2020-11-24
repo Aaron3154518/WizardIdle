@@ -72,9 +72,9 @@ void complexMathTests() {
 
 void comparisonTests() {
     std::cout << "\033[96mComparison Tests\033[0m" << std::endl;
-    Number num1 = Number(1, 5); // 100000
+    Number num1 = Number(758); // 100000
     Number num2 = Number(); // 0
-    Number num3 = Number(2, 3); // 2000
+    Number num3 = Number(666); // 2000
     ASSERT_EQ(num2 < num1, true, "Less Than1");
     ASSERT_EQ(num2 < num3, true, "Less Than2");
     ASSERT_EQ(num2 <= num2, true, "Less Than Equal1");
@@ -82,7 +82,7 @@ void comparisonTests() {
     ASSERT_EQ(num1 > num2, true, "Greater Than1");
     ASSERT_EQ(num3 > num2, true, "Greater Than2");
     ASSERT_EQ(num2 >= num2, true, "Greater Than Equal1");
-    ASSERT_EQ(num3 >= num2, true, "Greater Than Equal2");
+    ASSERT_EQ(num3 == num1, false, "Greater Than Equal2");
 }
 
 int runTests() {

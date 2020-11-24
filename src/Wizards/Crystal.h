@@ -4,6 +4,7 @@
 #include "../Rect.h"
 #include "../Number.h"
 #include "../Tools.h"
+#include "../AssetManager.h"
 #include "Sprite.h"
 #include "Upgrade.h"
 
@@ -21,6 +22,7 @@ public:
 
     std::string getImage() { return "crystal"; }
 private:
+    TextData magicText;
     Number cost;
     class MultU : public Upgrade {
     public:

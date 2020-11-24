@@ -60,7 +60,7 @@ public:
 private:
 	int exponent = 0;
 	double value = 0.;
-	bool zero = false;
+	bool zero = true;
 };
 
 #endif /* Number */

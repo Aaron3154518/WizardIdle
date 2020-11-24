@@ -49,7 +49,7 @@ public:
     static Rect screen();
     static Rect getAbsRect(const Rect& r);
 
-    static int icon_w;
+    static int icon_w, text_h;
 };
 
 #endif /* GAME_h */

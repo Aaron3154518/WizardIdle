@@ -4,12 +4,13 @@
 #include "../Rect.h"
 #include "../Number.h"
 #include "../Tools.h"
+#include "../AssetManager.h"
 #include "Sprite.h"
 #include "Upgrade.h"
 
 class Catalyst : public Sprite {
 public:
-    Number capacity, power;
+    Number points;
 
     Catalyst() = default;
     ~Catalyst() = default;
@@ -21,12 +22,11 @@ public:
 
     std::string getImage() { return "catalyst"; }
 
-    void addMagic(Number& add) {
-        magic = Number::getMin(capacity, magic + add);
-    }
+    void addMagic(Number add);
     const Number& getMagic() { return magic; }
 private:
-    Number magic;
+    Number capacity = 10, benchmark = 100, magic;
+    TextData pointsText, magicText;
 };
 
 #endif /* CATALYST_h */

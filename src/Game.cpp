@@ -18,7 +18,7 @@ private:
 };
 
 static GameStruct game;
-int Game::icon_w = 0;
+int Game::icon_w = 0, Game::text_h = 0;
 
 void Game::init() {
     // No double initializing!
@@ -55,7 +55,8 @@ void Game::init() {
 
     game.mAssets = AssetManager();
 
-    game.mAssets.loadFont(SMALL_FONT, "assets/times.ttf", -1, game.mScreen.h / 25);
+    text_h = game.mScreen.h / 25;
+    game.mAssets.loadFont(SMALL_FONT, "assets/times.ttf", -1, text_h);
     game.mAssets.loadFont(LARGE_FONT, "assets/times.ttf", -1, game.mScreen.h / 10);
 
     DIR* assetsDir = opendir("assets/");
@@ -124,6 +125,9 @@ void Game::handleEvents() {
     game.mEvent.handled = false;
     if (!game.mDragging) {
         Wizards::handleEvent(game.mEvent);
+        if (!game.mEvent.handled && game.mEvent.left.clicked) {
+            Wizards::crystal().magic *= 10;
+        }
     }
     if (!game.mEvent.handled) {
         if (game.mEvent.left.clicked) {

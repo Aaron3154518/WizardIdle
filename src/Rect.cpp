@@ -93,13 +93,13 @@ Rect Rect::getMinRect(SDL_Texture* tex, double w, double h) {
         SDL_Log("SDL_QueryTexture failed: %s", SDL_GetError());
     }
     double factor;
-    if (w == 0 && h == 0) {
+    if (w <= 0 && h <= 0) {
         factor = 1;
     }
-    else if (w == 0) {
+    else if (w <= 0) {
         factor = h / imgH;
     }
-    else if (h == 0) {
+    else if (h <= 0) {
         factor = w / imgW;
     }
     else {
