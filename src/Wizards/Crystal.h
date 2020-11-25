@@ -28,27 +28,23 @@ private:
     public:
         Number effect;
 
-        MultU() :
-            Upgrade([&]() {
-                    std::stringstream ss;
-                    ss << effect << "x";
-                    return ss.str();
-                    }) {}
-        void init() { Upgrade::init(0, "crystal", "Crystal multiplies gains of all wizards based on crystal magic"); }
+        MultU();
+
+        void init() { setDescription("Crystal multiplies gains of all wizards based on crystal magic"); }
         void update(Timestep ts);
     };
     class WizardU : public Upgrade {
     public:
-        WizardU() : Upgrade([&]() {return mLevel == 1 ? "Bought" : "Free"; }) {}
+        WizardU();
 
-        void init() { Upgrade::init(1, "wizard", "Unlock Wizard\nWizard shoots fireballs at the crystal, increasing its magic (M)"); }
+        void init() { setDescription("Unlock Wizard\nWizard shoots fireballs at the crystal, increasing its magic (M)"); }
         void levelUp();
     };
     class CatalystU : public Upgrade {
     public:
         CatalystU();
 
-        void init() { Upgrade::init(1, "catalyst", "Unlock Catalyst\nThe wizard can shoot fireballs "
+        void init() { setDescription("Unlock Catalyst\nThe wizard can shoot fireballs "
                 "into the catalyst to fill it up and gain Upgrade Points (UP). Use UP to power up your wizards!"); }
         void levelUp();
         bool canBuy();
@@ -57,7 +53,7 @@ private:
     public:
         PowerWizardU();
 
-        void init() { Upgrade::init(1, "power_wizard", "Unlock Power Wizard\nThis wizard shoots fireballs "
+        void init() { setDescription("Unlock Power Wizard\nThis wizard shoots fireballs "
                 "at other wizards which gives them a boost that decays over time"); }
         void levelUp();
         bool canBuy();

@@ -29,7 +29,7 @@ private:
     public:
         TargetU();
 
-        void init() { Upgrade::init(-1, "crystal", "Select where to shoot fireballs"); }
+        void init() { setDescription("Select where to shoot fireballs"); }
         void levelUp();
     private:
         int mTarget;

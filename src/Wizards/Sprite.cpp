@@ -35,6 +35,7 @@ bool Sprite::noDrag(Sprite& s, Event& e) {
 void Sprite::init() {
     mText.fontId = SMALL_FONT;
     mText.w = Game::icon_w * 6;
+    mUpgrades.init();
 }
 
 void Sprite::update(Timestep ts) {
@@ -54,7 +55,7 @@ void Sprite::update(Timestep ts) {
         } else { top = false; }
     }
 
-    for (Upgrade* u : mUpgrades) { u->update(ts); }
+    mUpgrades.update(ts);
 }
 
 void Sprite::render() {

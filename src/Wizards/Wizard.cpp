@@ -8,9 +8,8 @@ void Wizard::init() {
     mRect = Rect::getMinRect(Game::assets().getAsset(getImage()), w, w);
     mRect.setCenter(-Game::icon_w * 2, 0.);
 
-    target_u.init();
-    mUpgrades = { &target_u };
-
+    target_u.toggleVisibility();
+    mUpgrades = std::vector<Upgrade*> {&target_u};
     Sprite::init();
 }
 void Wizard::update(Timestep ts) {
@@ -41,7 +40,7 @@ void Wizard::update(Timestep ts) {
     Sprite::update(ts);
 }
 void Wizard::handleEvent(Event& e) {
-    if (drag(*this, e)) { Wizards::upgradeManager().setSprite(WIZARD); }
+    if (drag(*this, e)) { Wizards::upgradeManager().select(WIZARD); }
 //    Wizards::catalyst().mRect.setX2(mRect.x);
 //    Wizards::catalyst().mRect.setCenterY(mRect.cY());
 }
@@ -55,7 +54,7 @@ void Wizard::render() {
 
 // Target Upgrade
 Wizard::TargetU::TargetU() :
-    Upgrade([&](){
+    Upgrade(-1, "crystal", [&](){
             return "Currently: " + Wizards::getSprite(mTarget).getImage();
             }) {}
 void Wizard::TargetU::levelUp() {

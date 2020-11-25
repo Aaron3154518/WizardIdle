@@ -20,6 +20,7 @@ public:
 
     std::string getImage() { return "power_wizard"; }
 private:
+    Number power = Number(1, 2);
     FireballHandler mFireballs;
 
 public:

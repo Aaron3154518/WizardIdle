@@ -14,16 +14,13 @@ void Crystal::init() {
     magicText.yMode = BOTRIGHT;
     magicText.w = magicText.h = 0;
 
-    mult_u.init();
-    wizard_u.init();
-    catalyst_u.init();
-    powerWizard_u.init();
-    mUpgrades = { &mult_u, &wizard_u };
-
+    mult_u.toggleVisibility();
+    wizard_u.toggleVisibility();
+    mUpgrades = std::vector<Upgrade*> {&mult_u, &wizard_u, &catalyst_u, &powerWizard_u};
     Sprite::init();
 }
 void Crystal::handleEvent(Event& e) {
-    if (Sprite::noDrag(*this, e)) { Wizards::upgradeManager().setSprite(CRYSTAL); }
+    if (Sprite::noDrag(*this, e)) { Wizards::upgradeManager().select(CRYSTAL); }
 }
 void Crystal::render() {
     Rect r = Game::getAbsRect(mRect);
@@ -38,23 +35,31 @@ void Crystal::render() {
 }
 
 // Mult Upgrade
+Crystal::MultU::MultU() :
+    Upgrade(0, "crystal", [&]() {
+            std::stringstream ss;
+            ss << effect << "x";
+            return ss.str();
+            }) {}
 void Crystal::MultU::update(Timestep ts) {
     effect = ((Wizards::crystal().magic + 1).logBase(10) + 1) ^ 1.5;
 }
 
 // Wizard Upgrade
+Crystal::WizardU::WizardU() :
+    Upgrade(1, "wizard", [&]() { return mLevel == 0 ? "Free" : "Bought"; }) {}
 void Crystal::WizardU::levelUp() {
     ++mLevel;
     Wizards::wizard().mVisible = true;
     Crystal& crystal = Wizards::crystal();
-    crystal.mUpgrades.push_back(&crystal.catalyst_u);
-    crystal.mUpgrades.push_back(&crystal.powerWizard_u);
+    crystal.catalyst_u.toggleVisibility();
+    crystal.powerWizard_u.toggleVisibility();
     crystal.cost = Number(1, 2);
 }
 
 // Catalyst Upgrade
 Crystal::CatalystU::CatalystU() :
-    Upgrade([&]() {
+    Upgrade(1, "catalyst", [&]() {
             if (mLevel == 0) {
                 std::stringstream ss;
                 ss << Wizards::crystal().cost << "M";
@@ -73,7 +78,7 @@ bool Crystal::CatalystU::canBuy() {
 }
 // Power Wizard Upgrade
 Crystal::PowerWizardU::PowerWizardU() :
-    Upgrade([&]() {
+    Upgrade(1, "powerWizard", [&]() {
             if (mLevel == 0) {
                 std::stringstream ss;
                 ss << Wizards::crystal().cost << "M";

@@ -15,10 +15,11 @@ void Catalyst::init() {
     pointsText.w = pointsText.h = 0;
     magicText.w = Game::icon_w;
 
+    mUpgrades = std::vector<Upgrade*> {};
     Sprite::init();
 }
 void Catalyst::handleEvent(Event& e) {
-    if (noDrag(*this, e)) { Wizards::upgradeManager().setSprite(CATALYST); }
+    if (noDrag(*this, e)) { Wizards::upgradeManager().select(CATALYST); }
 }
 void Catalyst::render() {
     Rect r = Game::getAbsRect(mRect);

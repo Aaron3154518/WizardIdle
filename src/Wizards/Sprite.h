@@ -24,13 +24,13 @@ public:
     virtual void render();
 
     virtual std::string getImage() { return ""; }
-    std::vector<Upgrade*>& getUpgrades() { return mUpgrades; }
+    UpgradeVector& getUpgrades() { return mUpgrades; }
 
     static bool drag(Sprite& s, Event& e);
     static bool noDrag(Sprite& s, Event& e);
     void addMessage(std::string text, SDL_Color color = BLACK);
 protected:
-    std::vector<Upgrade*> mUpgrades;
+    UpgradeVector mUpgrades;
 private:
     struct Message {
         SDL_Texture* tex;

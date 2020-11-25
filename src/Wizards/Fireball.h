@@ -41,9 +41,6 @@ class FireballHandler {
 public:
     FireballHandler() = default;
     FireballHandler(std::vector<int> targets) : mTargets(targets) {}
-/*    FireballHandler(std::initializer_list<int> targets) {
-        for (int i : targets) {mTargets.push_back(i);}
-    }*/
     ~FireballHandler() = default;
 
     std::vector<Fireball> update(Timestep ts);

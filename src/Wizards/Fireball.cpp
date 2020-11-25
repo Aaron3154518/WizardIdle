@@ -50,7 +50,7 @@ void FireballHandler::newFireball(double x, double y, Number data) {
     }
     mTimer = mDelay;
     Fireball f(x, y);
-    f.mTarget = mTIdx;
+    f.mTarget = mTargets.at(mTIdx);
     f.mData = data;
     f.setSize((int)(Game::icon_w / 2));
     f.setImage(mImg);
