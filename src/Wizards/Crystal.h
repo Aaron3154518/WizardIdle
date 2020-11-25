@@ -53,10 +53,20 @@ private:
         void levelUp();
         bool canBuy();
     };
+    class PowerWizardU : public Upgrade {
+    public:
+        PowerWizardU();
+
+        void init() { Upgrade::init(1, "power_wizard", "Unlock Power Wizard\nThis wizard shoots fireballs "
+                "at other wizards which gives them a boost that decays over time"); }
+        void levelUp();
+        bool canBuy();
+    };
 public:
     MultU mult_u;
     WizardU wizard_u;
     CatalystU catalyst_u;
+    PowerWizardU powerWizard_u;
 };
 
 #endif /* CRYSTAL_h */

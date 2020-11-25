@@ -9,9 +9,10 @@ private:
     Crystal crystal;
     Catalyst catalyst;
     Wizard wizard;
+    PowerWizard powerWizard;
 
     bool initialized = false;
-    std::vector<Sprite*> mSprites = { &crystal, &catalyst, &wizard };
+    std::vector<Sprite*> mSprites = { &crystal, &catalyst, &wizard, &powerWizard };
 };
 
 WizardData wc;
@@ -48,10 +49,12 @@ Sprite& Wizards::getSprite(int id) {
     switch (id) {
         case CATALYST: return wc.catalyst; break;
         case WIZARD: return wc.wizard; break;
+        case POWER_WIZARD: return wc.powerWizard; break;
         default: return wc.crystal; break;
     }
 }
 Crystal& Wizards::crystal() { return wc.crystal; }
 Catalyst& Wizards::catalyst() { return wc.catalyst; }
 Wizard& Wizards::wizard() { return wc.wizard; }
+PowerWizard& Wizards::powerWizard() { return wc.powerWizard; }
 UpgradeManager& Wizards::upgradeManager() { return wc.upgradeManager; }

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+//#include <initializer_list>
 
 #include <SDL.h>
 
@@ -38,20 +39,28 @@ private:
 
 class FireballHandler {
 public:
-    int mTarget = -1;
-    std::string mImg = std::string("fireball");
-
     FireballHandler() = default;
-    FireballHandler(int target) : mTarget(target) {}
+    FireballHandler(std::vector<int> targets) : mTargets(targets) {}
+/*    FireballHandler(std::initializer_list<int> targets) {
+        for (int i : targets) {mTargets.push_back(i);}
+    }*/
     ~FireballHandler() = default;
 
     std::vector<Fireball> update(Timestep ts);
     void render();
 
     void setDelay(int delay) { mTimer = mDelay = delay; }
-    bool ready() { return mTarget != -1 && mTimer <= 0; }
+    bool ready() { return mTimer <= 0; }
     void newFireball(double x, double y, Number data);
+
+    void setImage(std::string img) { mImg = img; }
+    int nextTarget();
+    int getTarget() { return mTargets.size() == 0 ? -1 : mTargets.at(mTIdx); }
+    void setTarget(int target);
 private:
+    std::string mImg = "fireball";
+    int mTIdx = 0;
+    std::vector<int> mTargets;
     int mTimer = 0, mDelay = 50 * pow(1.25, 20) / 3;
     std::vector<Fireball> mFireballs;
 };

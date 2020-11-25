@@ -27,14 +27,12 @@ private:
     FireballHandler mFireballs;
     class TargetU : public Upgrade {
     public:
-        int mIdx = 0;
-
         TargetU();
 
         void init() { Upgrade::init(-1, "crystal", "Select where to shoot fireballs"); }
         void levelUp();
     private:
-        static std::array<int, 2> targets;
+        int mTarget;
     };
 public:
     TargetU target_u;

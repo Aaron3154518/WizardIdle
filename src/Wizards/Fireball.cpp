@@ -44,12 +44,35 @@ void FireballHandler::render() {
     }
 }
 void FireballHandler::newFireball(double x, double y, Number data) {
+    if (mTargets.size() == 0 ||
+            !Wizards::getSprite(mTargets.at(mTIdx)).mVisible) {
+        return;
+    }
     mTimer = mDelay;
     Fireball f(x, y);
-    f.mTarget = mTarget;
+    f.mTarget = mTIdx;
     f.mData = data;
     f.setSize((int)(Game::icon_w / 2));
     f.setImage(mImg);
     mFireballs.push_back(f);
 }
 
+int FireballHandler::nextTarget() {
+    if (mTargets.size() == 0) { return -1; }
+    int oldTarget = mTIdx;
+    mTIdx = (mTIdx + 1) % mTargets.size();
+    while (mTIdx != oldTarget && !Wizards::getSprite(mTargets.at(mTIdx)).mVisible) {
+        mTIdx = (mTIdx + 1) % mTargets.size();
+    }
+    return mTargets.at(mTIdx);
+}
+
+void FireballHandler::setTarget(int target) {
+    int i = 0;
+    for (int t : mTargets) {
+        if (t == target) { mTIdx = i; return; }
+        ++i;
+    }
+    mTargets.push_back(target);
+    mTIdx = mTargets.size() - 1;
+}

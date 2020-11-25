@@ -1,0 +1,19 @@
+#include "NameWizard.h"
+#include "../Game.h"
+
+// Name Wizard
+void NameWizard::init() {
+    Sprite::init();
+}
+
+void NameWizard::update(Timestep ts) {
+    Sprite::update(ts);
+}
+
+void NameWizard::handleEvent() {
+
+}
+
+void NameWizard::render() {
+    Sprite::render();
+}

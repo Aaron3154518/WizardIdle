@@ -2,7 +2,7 @@
 #include "WizardContext.h"
 
 // Wizard
-Wizard::Wizard() : mFireballs(FireballHandler(CRYSTAL)) {}
+Wizard::Wizard() : mFireballs(FireballHandler({CRYSTAL, CATALYST})) {}
 void Wizard::init() {
     int w = Game::icon_w;
     mRect = Rect::getMinRect(Game::assets().getAsset(getImage()), w, w);
@@ -54,20 +54,15 @@ void Wizard::render() {
 }
 
 // Target Upgrade
-std::array<int, 2> Wizard::TargetU::targets = {CRYSTAL, CATALYST};
 Wizard::TargetU::TargetU() :
     Upgrade([&](){
-            return "Currently: " + Wizards::getSprite(targets[mIdx]).getImage();
+            return "Currently: " + Wizards::getSprite(mTarget).getImage();
             }) {}
 void Wizard::TargetU::levelUp() {
-    int idx = mIdx;
-    mIdx = (mIdx + 1) % targets.size();
-    while (mIdx != idx && !Wizards::getSprite(targets[mIdx]).mVisible) {
-        mIdx = (mIdx + 1) % targets.size();
-    }
-    if (mIdx != idx) {
-        Wizards::wizard().mFireballs.mTarget = targets[mIdx];
-        mImg = Wizards::getSprite(targets[mIdx]).getImage();
+    int oldTarget = mTarget;
+    mTarget = Wizards::wizard().mFireballs.nextTarget();
+    if (oldTarget != mTarget) {
+        mImg = Wizards::getSprite(mTarget).getImage();
         updateMe = true;
     }
 }
