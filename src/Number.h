@@ -48,6 +48,7 @@ public:
 
 	// Comparison Operators
 	bool operator ==(const Number& rhs) const;
+        bool operator !=(const Number& rhs) const { return !(*this == rhs); }
 	friend bool operator <(const Number& lhs, const Number& rhs);
 	friend bool operator <=(const Number& lhs, const Number& rhs) { return lhs == rhs || lhs < rhs; }
 	friend bool operator >(const Number& lhs, const Number& rhs) { return rhs < lhs; }

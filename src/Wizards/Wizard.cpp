@@ -10,6 +10,8 @@ void Wizard::init() {
 
     target_u.init();
     mUpgrades = { &target_u };
+
+    Sprite::init();
 }
 void Wizard::update(Timestep ts) {
     power = basePower;
@@ -17,12 +19,17 @@ void Wizard::update(Timestep ts) {
 
     std::vector<Fireball> vec = mFireballs.update(ts);
     for (Fireball& f : vec) {
+        std::stringstream ss;
         switch (f.mTarget) {
             case CRYSTAL:
                 Wizards::crystal().magic += f.mData;
+                ss << "+" << f.mData << "M";
+                Wizards::crystal().addMessage(ss.str());
                 break;
             case CATALYST:
                 Wizards::catalyst().addMagic(f.mData);
+                ss << "+" << f.mData << "M";
+                Wizards::catalyst().addMessage(ss.str());
                 break;
         }
     }
@@ -30,7 +37,8 @@ void Wizard::update(Timestep ts) {
     if (mFireballs.ready()) {
         mFireballs.newFireball(mRect.cX(), mRect.cY(), power);
     }
-    for (Upgrade* u : mUpgrades) { u->update(ts); }
+
+    Sprite::update(ts);
 }
 void Wizard::handleEvent(Event& e) {
     if (drag(*this, e)) { Wizards::upgradeManager().setSprite(WIZARD); }
@@ -41,6 +49,8 @@ void Wizard::render() {
     Rect r = Game::getAbsRect(mRect);
     Game::assets().drawTexture(getImage(), r, NULL);
     mFireballs.render();
+
+    Sprite::render();
 }
 
 // Target Upgrade

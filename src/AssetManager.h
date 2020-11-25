@@ -10,6 +10,7 @@
 #include <SDL_ttf.h>
 
 #include "Rect.h"
+#include "Number.h"
 
 // ARGB masks for creating surfaces and colors
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -26,6 +27,7 @@ constexpr Uint32 amask = 0xff000000;
 
 // Colors
 constexpr SDL_Color WHITE   {255,255,255};
+constexpr SDL_Color LGRAY   {175,175,175};
 constexpr SDL_Color GRAY    {128,128,128};
 constexpr SDL_Color BLACK   {0  ,0  ,0  };
 constexpr SDL_Color RED     {255,0  ,0  };
@@ -75,7 +77,10 @@ public:
     void drawTexture(std::string id, Rect& destRect, Rect* boundary) const { drawTexture(getAsset(id), destRect, boundary); }
     void drawText(TextData& data, Rect* boundary) const;
     void drawTextWrapped(TextData& data, Rect* boundary, Uint32 bkgrnd=-1) const;
-private:
+
+    void drawProgressBar(Number amnt, Number cap, Rect& rect, SDL_Color color, SDL_Color bkgrnd) const;
+    void drawProgressBarLog(Number amnt, Number cap, Rect& rect, SDL_Color color, SDL_Color bkgrnd) const;
+ private:
     std::map<std::string, SDL_Texture*> assets;
     std::map<std::string, TTF_Font*> fonts;
 };

@@ -14,9 +14,8 @@ void Catalyst::init() {
     magicText.yMode = TOPLEFT;
     pointsText.w = pointsText.h = 0;
     magicText.w = Game::icon_w;
-}
-void Catalyst::update(Timestep ts) {
-    for (Upgrade* u : mUpgrades) { u->update(ts); }
+
+    Sprite::init();
 }
 void Catalyst::handleEvent(Event& e) {
     if (noDrag(*this, e)) { Wizards::upgradeManager().setSprite(CATALYST); }
@@ -24,26 +23,35 @@ void Catalyst::handleEvent(Event& e) {
 void Catalyst::render() {
     Rect r = Game::getAbsRect(mRect);
     Game::assets().drawTexture(getImage(), r, NULL);
+    r.h = (int)(Game::text_h * .75);
+    r.setY2(r.y + 1);
+    if (points != capacity) {
+        Game::assets().drawProgressBar(magic, goal, r, BLUE, LGRAY);
+    } else {
+        Game::assets().drawProgressBar(1, 1, r, YELLOW, LGRAY);
+    }
     std::stringstream ss;
     ss << points << "UP";
     pointsText.x = r.cX(); pointsText.y = r.y;
     pointsText.text = ss.str();
     Game::assets().drawText(pointsText, NULL);
-    ss.str("");
-    ss << magic << "/" << benchmark;
-    magicText.x = r.cX(); magicText.y = r.y2();
-    magicText.text = ss.str();
-    Game::assets().drawTextWrapped(magicText, NULL);
+
+    Sprite::render();
 }
 void Catalyst::addMagic(Number add) {
     if (points < capacity) {
         magic += add;
-        if (magic >= benchmark) {
+        Number oldPoints = points;
+        while (magic >= goal) {
             points += 1;
-            if (points == capacity) {
-                magic = benchmark;
-            }
-            benchmark ^= 1.2;
+            if (points == capacity) { magic = 0; break; }
+            else { magic -= goal; }
+            goal ^= 1.2;
+        }
+        if (points != oldPoints) {
+            std::stringstream ss;
+            ss << "+" << (points - oldPoints) << "UP";
+            addMessage(ss.str(), BLUE);
         }
     }
 }

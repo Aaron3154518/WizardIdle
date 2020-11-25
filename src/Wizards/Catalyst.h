@@ -16,7 +16,7 @@ public:
     ~Catalyst() = default;
 
     void init();
-    void update(Timestep ts);
+//    void update(Timestep ts);
     void handleEvent(Event& e);
     void render();
 
@@ -25,7 +25,7 @@ public:
     void addMagic(Number add);
     const Number& getMagic() { return magic; }
 private:
-    Number capacity = 10, benchmark = 100, magic;
+    Number capacity = 10, goal = 100, magic;
     TextData pointsText, magicText;
 };
 

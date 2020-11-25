@@ -16,7 +16,7 @@ public:
     ~Crystal() = default;
 
     void init();
-    void update(Timestep ts);
+//    void update(Timestep ts);
     void handleEvent(Event& e);
     void render();
 
@@ -41,7 +41,7 @@ private:
     public:
         WizardU() : Upgrade([&]() {return mLevel == 1 ? "Bought" : "Free"; }) {}
 
-        void init() { Upgrade::init(1, "wizard", "Unlock Wizard\nWizard shoots fireballs at the crystal"); }
+        void init() { Upgrade::init(1, "wizard", "Unlock Wizard\nWizard shoots fireballs at the crystal, increasing its magic (M)"); }
         void levelUp();
     };
     class CatalystU : public Upgrade {
@@ -49,7 +49,7 @@ private:
         CatalystU();
 
         void init() { Upgrade::init(1, "catalyst", "Unlock Catalyst\nThe wizard can shoot fireballs "
-                "into the catalyst to fill it up. Use catalyst power to power up your wizards!"); }
+                "into the catalyst to fill it up and gain Upgrade Points (UP). Use UP to power up your wizards!"); }
         void levelUp();
         bool canBuy();
     };

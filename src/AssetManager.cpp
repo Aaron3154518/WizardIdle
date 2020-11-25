@@ -101,28 +101,34 @@ SDL_Texture* AssetManager::renderTextWrapped(TextData& data, Rect& rect, Uint32 
     TTF_SizeText(font, " ", &spaceW, NULL);
     int width = 0;
     int maxW = data.w;
+    bool addSpace = false;
     for (char ch : data.text + '\n') {
-        if (ch == ' ' || ch == '\n') {
+        if (ch == ' ' || ch == '\n' || ch == '\b') {
             std::string word = word_ss.str();
             word_ss.str("");
             int wordW;
             TTF_SizeText(font, word.c_str(), &wordW, NULL);
             if (width + wordW < data.w) {
-                if (width != 0) { line_ss << ' '; }
+                if (addSpace) { line_ss << ' '; }
                 line_ss << word;
-                width += wordW + spaceW;
+                width += wordW;
+                if (ch == ' ') { addSpace = true; width += spaceW; }
+                else { addSpace = false; }
             }
             else {
-                if (line_ss.str() != "") { lines.push_back(line_ss.str()); }
+                if (width != 0) { lines.push_back(line_ss.str()); }
                 line_ss.str("");
                 line_ss << word;
-                width = wordW + spaceW;
+                width = wordW;
+                if (ch == ' ') { addSpace = true; width += spaceW; }
+                else { addSpace = false; }
                 if (wordW > maxW) { maxW = wordW; }
             }
             if (ch == '\n') {
                 lines.push_back(line_ss.str());
                 line_ss.str("");
                 width = 0;
+                addSpace = false;
             }
         }
         else {
@@ -219,4 +225,29 @@ void AssetManager::drawTextWrapped(TextData& data, Rect* boundary, Uint32 bkgrnd
         drawTexture(tex, r, boundary);
         SDL_DestroyTexture(tex);
     }
+}
+
+void AssetManager::drawProgressBar(Number amnt, Number cap, Rect& rect,
+        SDL_Color color, SDL_Color bkgrnd) const {
+    Number quot;
+    if (cap != 0) { quot = amnt / cap; }
+    else { quot = 1; }
+    double frac = quot.getValue();
+    if (quot > 1) { frac = 1.; } 
+    else if (quot < 1 / rect.w) { frac = 0.; }
+    else { frac *= pow(10, quot.getExponent()); }
+    Game::setDrawColor(bkgrnd);
+    SDL_RenderFillRect(Game::renderer(), &rect);
+    Rect r = Rect(rect.x, rect.y, (int)(rect.w * frac), rect.h);
+    Game::setDrawColor(color);
+    SDL_RenderFillRect(Game::renderer(), &r);
+    Game::setDrawColor(BLACK);
+    SDL_RenderDrawRect(Game::renderer(), &rect);
+    Game::resetDrawColor();
+}
+void AssetManager::drawProgressBarLog(Number amnt, Number cap, Rect& rect,
+        SDL_Color color, SDL_Color bkgrnd) const {
+    Number logAmnt = amnt > 0 ? amnt.logBase(10) : 0;
+    Number logCap = cap > 0 ? cap.logBase(10) : 0;
+    drawProgressBar(logAmnt, logCap, rect, color, bkgrnd);
 }

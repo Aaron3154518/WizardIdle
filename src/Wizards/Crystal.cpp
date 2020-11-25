@@ -18,9 +18,8 @@ void Crystal::init() {
     wizard_u.init();
     catalyst_u.init();
     mUpgrades = { &mult_u, &wizard_u };
-}
-void Crystal::update(Timestep ts) {
-    for (Upgrade* u : mUpgrades) { u->update(ts); }
+
+    Sprite::init();
 }
 void Crystal::handleEvent(Event& e) {
     if (Sprite::noDrag(*this, e)) { Wizards::upgradeManager().setSprite(CRYSTAL); }
@@ -33,11 +32,13 @@ void Crystal::render() {
     magicText.x = r.cX(); magicText.y = r.y;
     magicText.text = ss.str();
     Game::assets().drawText(magicText, NULL);
+
+    Sprite::render();
 }
 
 // Mult Upgrade
 void Crystal::MultU::update(Timestep ts) {
-    effect = (Wizards::crystal().magic + 1).logBase(10) + 1;
+    effect = ((Wizards::crystal().magic + 1).logBase(10) + 1) ^ 1.5;
 }
 
 // Wizard Upgrade
