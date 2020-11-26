@@ -9,7 +9,7 @@
 #include <SDL.h>
 
 #include "../Rect.h"
-#include "../Game.h"
+#include "../Tools.h"
 #include "../AssetManager.h"
 
 typedef std::function<std::string()> InfoFunc;

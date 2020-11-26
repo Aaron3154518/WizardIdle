@@ -1,12 +1,13 @@
 #include "Wizard.h"
-#include "WizardContext.h"
+#include "WizardData.h"
+#include "../Game.h"
 
 // Wizard
 Wizard::Wizard() : mFireballs(FireballHandler({CRYSTAL, CATALYST})) {}
 void Wizard::init() {
-    int w = Game::icon_w;
-    mRect = Rect::getMinRect(Game::assets().getAsset(getImage()), w, w);
-    mRect.setCenter(-Game::icon_w * 2, 0.);
+    int w = Game::get().icon_w;
+    mRect = Rect::getMinRect(Game::get().assets.getAsset(getImage()), w, w);
+    mRect.setCenter(-Game::get().icon_w * 2, 0.);
 
     target_u.toggleVisibility();
     mUpgrades = std::vector<Upgrade*> {&target_u};
@@ -14,21 +15,21 @@ void Wizard::init() {
 }
 void Wizard::update(Timestep ts) {
     power = basePower;
-    power *= Wizards::crystal().mult_u.effect;
+    power *= Game::get().wizards.crystal.mult_u.effect;
 
     std::vector<Fireball> vec = mFireballs.update(ts);
     for (Fireball& f : vec) {
         std::stringstream ss;
         switch (f.mTarget) {
             case CRYSTAL:
-                Wizards::crystal().magic += f.mData;
+                Game::get().wizards.crystal.magic += f.mData;
                 ss << "+" << f.mData << "M";
-                Wizards::crystal().addMessage(ss.str());
+                Game::get().wizards.crystal.addMessage(ss.str());
                 break;
             case CATALYST:
-                Wizards::catalyst().addMagic(f.mData);
+                Game::get().wizards.catalyst.addMagic(f.mData);
                 ss << "+" << f.mData << "M";
-                Wizards::catalyst().addMessage(ss.str());
+                Game::get().wizards.catalyst.addMessage(ss.str());
                 break;
         }
     }
@@ -40,13 +41,13 @@ void Wizard::update(Timestep ts) {
     Sprite::update(ts);
 }
 void Wizard::handleEvent(Event& e) {
-    if (drag(*this, e)) { Wizards::upgradeManager().select(WIZARD); }
-//    Wizards::catalyst().mRect.setX2(mRect.x);
-//    Wizards::catalyst().mRect.setCenterY(mRect.cY());
+    if (drag(*this, e)) { Game::get().wizards.upgradeManager.select(WIZARD); }
+//    Game::get().wizards.catalyst.mRect.setX2(mRect.x);
+//    Game::get().wizards.catalyst.mRect.setCenterY(mRect.cY());
 }
 void Wizard::render() {
-    Rect r = Game::getAbsRect(mRect);
-    Game::assets().drawTexture(getImage(), r, NULL);
+    Rect r = Game::get().getAbsRect(mRect);
+    Game::get().assets.drawTexture(getImage(), r, NULL);
     mFireballs.render();
 
     Sprite::render();
@@ -55,13 +56,13 @@ void Wizard::render() {
 // Target Upgrade
 Wizard::TargetU::TargetU() :
     Upgrade(-1, "crystal", [&](){
-            return "Currently: " + Wizards::getSprite(mTarget).getImage();
+            return "Currently: " + Game::get().wizards.getSprite(mTarget).getImage();
             }) {}
 void Wizard::TargetU::levelUp() {
     int oldTarget = mTarget;
-    mTarget = Wizards::wizard().mFireballs.nextTarget();
+    mTarget = Game::get().wizards.wizard.mFireballs.nextTarget();
     if (oldTarget != mTarget) {
-        mImg = Wizards::getSprite(mTarget).getImage();
+        mImg = Game::get().wizards.getSprite(mTarget).getImage();
         updateMe = true;
     }
 }

@@ -27,7 +27,7 @@ void AssetManager::loadAsset(std::string id, const char* fileName) {
         std::cout << "Successfully loaded asset: " << id << std::endl;
     }
     SDL_Surface* tmpSurface = IMG_Load(fileName);
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(Game::renderer(), tmpSurface);
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(Game::get().renderer, tmpSurface);
     SDL_FreeSurface(tmpSurface);
     assets.emplace(id, tex);
 }
@@ -80,7 +80,7 @@ SDL_Texture* AssetManager::renderText(TextData& data, Rect& rect) const {
         return nullptr;
     }
     SDL_Surface* surface = TTF_RenderText_Blended(font, data.text.c_str(), data.color);
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(Game::renderer(), surface);
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(Game::get().renderer, surface);
     SDL_FreeSurface(surface);
     rect = Rect::getMinRect(tex, data.w, data.h);
     data.setRectPos(rect);
@@ -158,7 +158,7 @@ SDL_Texture* AssetManager::renderTextWrapped(TextData& data, Rect& rect, Uint32 
         y += lineH;
     }
     lines.clear();
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(Game::renderer(), surf);
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(Game::get().renderer, surf);
     SDL_FreeSurface(surf);
     return tex;
 }
@@ -168,7 +168,7 @@ void AssetManager::drawTexture(SDL_Texture* tex, Rect& destRect, Rect* boundary)
         std::cout << "Invalid Texture" << std::endl;
         return;
     }
-    Rect screen = Game::screen();
+    Rect screen = Game::get().screen;
     if (boundary == nullptr) {
         boundary = &screen;
     }
@@ -206,7 +206,7 @@ void AssetManager::drawTexture(SDL_Texture* tex, Rect& destRect, Rect* boundary)
         return;
     }
 
-    SDL_RenderCopy(Game::renderer(), tex, &texRect, &drawRect);
+    SDL_RenderCopy(Game::get().renderer, tex, &texRect, &drawRect);
 }
 
 void AssetManager::drawText(TextData& data, Rect* boundary) const {
@@ -236,14 +236,14 @@ void AssetManager::drawProgressBar(Number amnt, Number cap, Rect& rect,
     if (quot > 1) { frac = 1.; } 
     else if (quot < 1 / rect.w) { frac = 0.; }
     else { frac *= pow(10, quot.getExponent()); }
-    Game::setDrawColor(bkgrnd);
-    SDL_RenderFillRect(Game::renderer(), &rect);
+    Game::get().setDrawColor(bkgrnd);
+    SDL_RenderFillRect(Game::get().renderer, &rect);
     Rect r = Rect(rect.x, rect.y, (int)(rect.w * frac), rect.h);
-    Game::setDrawColor(color);
-    SDL_RenderFillRect(Game::renderer(), &r);
-    Game::setDrawColor(BLACK);
-    SDL_RenderDrawRect(Game::renderer(), &rect);
-    Game::resetDrawColor();
+    Game::get().setDrawColor(color);
+    SDL_RenderFillRect(Game::get().renderer, &r);
+    Game::get().setDrawColor(BLACK);
+    SDL_RenderDrawRect(Game::get().renderer, &rect);
+    Game::get().resetDrawColor();
 }
 void AssetManager::drawProgressBarLog(Number amnt, Number cap, Rect& rect,
         SDL_Color color, SDL_Color bkgrnd) const {

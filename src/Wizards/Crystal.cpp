@@ -1,10 +1,11 @@
 #include "Crystal.h"
-#include "WizardContext.h"
+#include "WizardData.h"
+#include "../Game.h"
 
 // Crystal
 void Crystal::init() {
-    int w = Game::icon_w * 2;
-    mRect = Rect::getMinRect(Game::assets().getAsset(getImage()), w, w);
+    int w = Game::get().icon_w * 2;
+    mRect = Rect::getMinRect(Game::get().assets.getAsset(getImage()), w, w);
     mRect.setCenter(0., 0.);
     mVisible = true;
 
@@ -20,16 +21,16 @@ void Crystal::init() {
     Sprite::init();
 }
 void Crystal::handleEvent(Event& e) {
-    if (Sprite::noDrag(*this, e)) { Wizards::upgradeManager().select(CRYSTAL); }
+    if (Sprite::noDrag(*this, e)) { Game::get().wizards.upgradeManager.select(CRYSTAL); }
 }
 void Crystal::render() {
-    Rect r = Game::getAbsRect(mRect);
-    Game::assets().drawTexture(getImage(), r, NULL);
+    Rect r = Game::get().getAbsRect(mRect);
+    Game::get().assets.drawTexture(getImage(), r, NULL);
     std::stringstream ss;
     ss << magic << "M";
     magicText.x = r.cX(); magicText.y = r.y;
     magicText.text = ss.str();
-    Game::assets().drawText(magicText, NULL);
+    Game::get().assets.drawText(magicText, NULL);
 
     Sprite::render();
 }
@@ -42,7 +43,7 @@ Crystal::MultU::MultU() :
             return ss.str();
             }) {}
 void Crystal::MultU::update(Timestep ts) {
-    effect = ((Wizards::crystal().magic + 1).logBase(10) + 1) ^ 1.5;
+    effect = ((Game::get().wizards.crystal.magic + 1).logBase(10) + 1) ^ 1.5;
 }
 
 // Wizard Upgrade
@@ -50,8 +51,8 @@ Crystal::WizardU::WizardU() :
     Upgrade(1, "wizard", [&]() { return mLevel == 0 ? "Free" : "Bought"; }) {}
 void Crystal::WizardU::levelUp() {
     ++mLevel;
-    Wizards::wizard().mVisible = true;
-    Crystal& crystal = Wizards::crystal();
+    Game::get().wizards.wizard.mVisible = true;
+    Crystal& crystal = Game::get().wizards.crystal;
     crystal.catalyst_u.toggleVisibility();
     crystal.powerWizard_u.toggleVisibility();
     crystal.cost = Number(1, 2);
@@ -62,37 +63,37 @@ Crystal::CatalystU::CatalystU() :
     Upgrade(1, "catalyst", [&]() {
             if (mLevel == 0) {
                 std::stringstream ss;
-                ss << Wizards::crystal().cost << "M";
+                ss << Game::get().wizards.crystal.cost << "M";
                 return ss.str().c_str();
             }
             return "Bought";
             }) {}
 void Crystal::CatalystU::levelUp() {
     ++mLevel;
-    Wizards::catalyst().mVisible = true;
-    Wizards::crystal().magic -= Wizards::crystal().cost;
-    Wizards::crystal().cost ^= 1.9;
+    Game::get().wizards.catalyst.mVisible = true;
+    Game::get().wizards.crystal.magic -= Game::get().wizards.crystal.cost;
+    Game::get().wizards.crystal.cost ^= 1.9;
 }
 bool Crystal::CatalystU::canBuy() {
-    return mLevel == 0 && Wizards::crystal().cost <= Wizards::crystal().magic;
+    return mLevel == 0 && Game::get().wizards.crystal.cost <= Game::get().wizards.crystal.magic;
 }
 // Power Wizard Upgrade
 Crystal::PowerWizardU::PowerWizardU() :
     Upgrade(1, "powerWizard", [&]() {
             if (mLevel == 0) {
                 std::stringstream ss;
-                ss << Wizards::crystal().cost << "M";
+                ss << Game::get().wizards.crystal.cost << "M";
                 return ss.str().c_str();
             }
             return "Bought";
             }) {}
 void Crystal::PowerWizardU::levelUp() {
     ++mLevel;
-    Wizards::powerWizard().mVisible = true;
-    Wizards::crystal().magic -= Wizards::crystal().cost;
-    Wizards::crystal().cost ^= 1.9;
+    Game::get().wizards.powerWizard.mVisible = true;
+    Game::get().wizards.crystal.magic -= Game::get().wizards.crystal.cost;
+    Game::get().wizards.crystal.cost ^= 1.9;
 }
 bool Crystal::PowerWizardU::canBuy() {
-    return mLevel == 0 && Wizards::crystal().cost <= Wizards::crystal().magic;
+    return mLevel == 0 && Game::get().wizards.crystal.cost <= Game::get().wizards.crystal.magic;
 }
 

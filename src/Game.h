@@ -14,6 +14,7 @@
 #include "Number.h"
 #include "Tools.h"
 #include "AssetManager.h"
+#include "Wizards/WizardData.h"
 
 // Font identifiers
 constexpr auto SMALL_FONT = "smallfont";
@@ -21,35 +22,46 @@ constexpr auto LARGE_FONT = "largefont";
 
 // Game class
 class Game {
+private:
+    Game() = default;
+    ~Game() = default;
+
+    bool mRunning = false, mDragging = false;
+    SDL_Window* mWindow;
 public:
-    static void init();
-    static void clean();
-    static void updateTime();
-    static void handleEvents();
-    static void update();
-    static void render();
+    Game(const Game&) = delete;
+    void operator=(const Game&) = delete;
 
-    static void setDrawColor(const SDL_Color& c);
-    static void resetDrawColor();
+    static Game& get();
 
-    static void setRenderTarget(SDL_Texture* tex);
-    static void resetRenderTarget();
+    void init();
+    void clean();
+    void updateTime();
+    void handleEvents();
+    void update();
+    void render();
+
+    void setDrawColor(const SDL_Color& c);
+    void resetDrawColor();
+
+    void setRenderTarget(SDL_Texture* tex);
+    void resetRenderTarget();
+
+    int maxW = 0, maxH = 0;
+    int icon_w = 0, text_h = 0;
+    SDL_Point camera;
+    Rect screen;
+    SDL_Renderer* renderer;
+    AssetManager assets;
+
+    Uint32 gameTime = 0;
+    Timestep ts;
+    Event event;
+    WizardData wizards;
 
     // Getters
-    static SDL_Renderer* renderer();
-    static const AssetManager& assets();
-
-    static bool running();
-    static Timestep ts();
-    static Uint32 gameTime();
-
-    static int maxW();
-    static int maxH();
-    static SDL_Point camera();
-    static Rect screen();
-    static Rect getAbsRect(const Rect& r);
-
-    static int icon_w, text_h;
+    bool running() { return mRunning; }
+    Rect getAbsRect(const Rect& r);
 };
 
 #endif /* GAME_h */

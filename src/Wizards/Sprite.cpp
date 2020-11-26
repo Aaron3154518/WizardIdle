@@ -34,13 +34,13 @@ bool Sprite::noDrag(Sprite& s, Event& e) {
 
 void Sprite::init() {
     mText.fontId = SMALL_FONT;
-    mText.w = Game::icon_w * 6;
+    mText.w = Game::get().icon_w * 6;
     mUpgrades.init();
 }
 
 void Sprite::update(Timestep ts) {
     if (mMessageY != 0) {
-        double dy = std::max(mMessageY, (double)Game::text_h) / 20.;
+        double dy = std::max(mMessageY, (double)Game::get().text_h) / 20.;
         mMessageY -= dy;
         if (mMessageY < 0) { mMessageY = 0; }
     }
@@ -64,8 +64,8 @@ void Sprite::render() {
     for (Message m : mMessages) { 
         m.rect.y = y;
         m.rect.setCenterX(cX);
-        m.rect = Game::getAbsRect(m.rect);
-        Game::assets().drawTexture(m.tex, m.rect, NULL);
+        m.rect = Game::get().getAbsRect(m.rect);
+        Game::get().assets.drawTexture(m.tex, m.rect, NULL);
         y += m.rect.h;
     }
 }
@@ -75,6 +75,6 @@ void Sprite::addMessage(std::string text, SDL_Color color) {
     mText.text = text; mText.color = color;
     mMessages.push_back(Message()); // Push back now so we don't copy m.tex
     Message& m = mMessages.back();
-    m.tex = Game::assets().renderTextWrapped(mText, m.rect);
+    m.tex = Game::get().assets.renderTextWrapped(mText, m.rect);
 
 }

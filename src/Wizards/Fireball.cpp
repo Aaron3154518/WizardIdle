@@ -1,5 +1,6 @@
 #include "Fireball.h"
-#include "WizardContext.h"
+#include "WizardData.h"
+#include "../Game.h"
 
 // Fireball
 bool Fireball::update(Rect& target, Timestep ts) {
@@ -17,7 +18,7 @@ void Fireball::setPos(double nX, double nY) {
 void Fireball::setImage(std::string img) {
     mImg = img;
     double cX = mRect.cX(), cY = mRect.cY();
-    mRect = Rect::getMinRect(Game::assets().getAsset(mImg), mSize, mSize);
+    mRect = Rect::getMinRect(Game::get().assets.getAsset(mImg), mSize, mSize);
     mRect.setCenter(cX, cY);
 }
 void Fireball::setSize(int size) {
@@ -29,7 +30,7 @@ std::vector<Fireball> FireballHandler::update(Timestep ts) {
     mTimer -= ts.GetMilliseconds();
     std::vector<Fireball> vec;
     for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
-        if (it->update(Wizards::getSprite(it->mTarget).mRect, ts)) {
+        if (it->update(Game::get().wizards.getSprite(it->mTarget).mRect, ts)) {
             vec.push_back(*it);
             it = mFireballs.erase(it);
             if (it == mFireballs.end()) { break; }
@@ -39,20 +40,20 @@ std::vector<Fireball> FireballHandler::update(Timestep ts) {
 }
 void FireballHandler::render() {
     for (Fireball& f : mFireballs) {
-        Rect r = Game::getAbsRect(f.mRect);
-        Game::assets().drawTexture(f.getImage(), r, NULL);
+        Rect r = Game::get().getAbsRect(f.mRect);
+        Game::get().assets.drawTexture(f.getImage(), r, NULL);
     }
 }
 void FireballHandler::newFireball(double x, double y, Number data) {
     if (mTargets.size() == 0 ||
-            !Wizards::getSprite(mTargets.at(mTIdx)).mVisible) {
+            !Game::get().wizards.getSprite(mTargets.at(mTIdx)).mVisible) {
         return;
     }
     mTimer = mDelay;
     Fireball f(x, y);
     f.mTarget = mTargets.at(mTIdx);
     f.mData = data;
-    f.setSize((int)(Game::icon_w / 2));
+    f.setSize((int)(Game::get().icon_w / 2));
     f.setImage(mImg);
     mFireballs.push_back(f);
 }
@@ -61,7 +62,7 @@ int FireballHandler::nextTarget() {
     if (mTargets.size() == 0) { return -1; }
     int oldTarget = mTIdx;
     mTIdx = (mTIdx + 1) % mTargets.size();
-    while (mTIdx != oldTarget && !Wizards::getSprite(mTargets.at(mTIdx)).mVisible) {
+    while (mTIdx != oldTarget && !Game::get().wizards.getSprite(mTargets.at(mTIdx)).mVisible) {
         mTIdx = (mTIdx + 1) % mTargets.size();
     }
     return mTargets.at(mTIdx);

@@ -13,7 +13,7 @@
 #include "../AssetManager.h"
 
 // Forward Declaration
-class WizardContext;
+class WizardData;
 
 class Fireball {
 public:

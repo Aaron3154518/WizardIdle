@@ -1,41 +1,41 @@
 #include "Catalyst.h"
-#include "WizardContext.h"
+#include "WizardData.h"
 #include "../Game.h"
 
 // Catalyst
 void Catalyst::init() {
-    int w = Game::icon_w * 3 / 4;
-    mRect = Rect::getMinRect(Game::assets().getAsset(getImage()), w, w);
-    mRect.setCenter(-Game::icon_w * 2, 0.);
+    int w = Game::get().icon_w * 3 / 4;
+    mRect = Rect::getMinRect(Game::get().assets.getAsset(getImage()), w, w);
+    mRect.setCenter(-Game::get().icon_w * 2, 0.);
 
     pointsText.fontId = magicText.fontId = SMALL_FONT;
     pointsText.xMode = magicText.xMode = CENTER;
     pointsText.yMode = BOTRIGHT;
     magicText.yMode = TOPLEFT;
     pointsText.w = pointsText.h = 0;
-    magicText.w = Game::icon_w;
+    magicText.w = Game::get().icon_w;
 
     mUpgrades = std::vector<Upgrade*> {};
     Sprite::init();
 }
 void Catalyst::handleEvent(Event& e) {
-    if (noDrag(*this, e)) { Wizards::upgradeManager().select(CATALYST); }
+    if (noDrag(*this, e)) { Game::get().wizards.upgradeManager.select(CATALYST); }
 }
 void Catalyst::render() {
-    Rect r = Game::getAbsRect(mRect);
-    Game::assets().drawTexture(getImage(), r, NULL);
-    r.h = (int)(Game::text_h * .75);
+    Rect r = Game::get().getAbsRect(mRect);
+    Game::get().assets.drawTexture(getImage(), r, NULL);
+    r.h = (int)(Game::get().text_h * .75);
     r.setY2(r.y + 1);
     if (points != capacity) {
-        Game::assets().drawProgressBar(magic, goal, r, BLUE, LGRAY);
+        Game::get().assets.drawProgressBar(magic, goal, r, BLUE, LGRAY);
     } else {
-        Game::assets().drawProgressBar(1, 1, r, YELLOW, LGRAY);
+        Game::get().assets.drawProgressBar(1, 1, r, YELLOW, LGRAY);
     }
     std::stringstream ss;
     ss << points << "UP";
     pointsText.x = r.cX(); pointsText.y = r.y;
     pointsText.text = ss.str();
-    Game::assets().drawText(pointsText, NULL);
+    Game::get().assets.drawText(pointsText, NULL);
 
     Sprite::render();
 }

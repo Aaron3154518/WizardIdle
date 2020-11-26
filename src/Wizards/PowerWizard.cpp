@@ -1,5 +1,5 @@
 #include "PowerWizard.h"
-#include "WizardContext.h"
+#include "WizardData.h"
 #include "../Game.h"
 
 // Power Wizard
@@ -7,9 +7,9 @@ PowerWizard::PowerWizard() : mFireballs(FireballHandler({WIZARD})) {
     mFireballs.setImage("fireball2");
 }
 void PowerWizard::init() {
-    int w = Game::icon_w;
-    mRect = Rect::getMinRect(Game::assets().getAsset(getImage()), w, w);
-    mRect.setCenter(-Game::icon_w * 2, 0.);
+    int w = Game::get().icon_w;
+    mRect = Rect::getMinRect(Game::get().assets.getAsset(getImage()), w, w);
+    mRect.setCenter(-Game::get().icon_w * 2, 0.);
 
     mUpgrades = std::vector<Upgrade*> {};
     Sprite::init();
@@ -21,8 +21,8 @@ void PowerWizard::update(Timestep ts) {
         switch (f.mTarget) {
             case WIZARD:
                 ss << "+" << power << "x";
-                Wizards::wizard().addMessage(ss.str(), CYAN);
-                Wizards::wizard().basePower = power;
+                Game::get().wizards.wizard.addMessage(ss.str(), CYAN);
+                Game::get().wizards.wizard.basePower = power;
                 break;
         }
     }
@@ -34,11 +34,11 @@ void PowerWizard::update(Timestep ts) {
     Sprite::update(ts);
 }
 void PowerWizard::handleEvent(Event& e) {
-    if (Sprite::drag(*this, e)) { Wizards::upgradeManager().select(POWER_WIZARD); }
+    if (Sprite::drag(*this, e)) { Game::get().wizards.upgradeManager.select(POWER_WIZARD); }
 }
 void PowerWizard::render() {
-    Rect r = Game::getAbsRect(mRect);
-    Game::assets().drawTexture(getImage(), r, NULL);
+    Rect r = Game::get().getAbsRect(mRect);
+    Game::get().assets.drawTexture(getImage(), r, NULL);
     mFireballs.render();
 
     Sprite::render();

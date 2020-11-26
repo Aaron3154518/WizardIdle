@@ -11,12 +11,12 @@ void NameWizard::update(Timestep ts) {
 }
 
 void NameWizard::handleEvent() {
-   if (drag(*this, e)) { Wizards::upgradeManager().setSprite(WIZARD); }
+   if (drag(*this, e)) { Game::get().wizards.upgradeManager.setSprite(WIZARD); }
 }
 
 void NameWizard::render() {
-    Rect r = Game::getAbsRect(mRect);
-    Game::assets().drawTexture(getImage(), r, NULL);
+    Rect r = Game::get().getAbsRect(mRect);
+    Game::get().assets.drawTexture(getImage(), r, NULL);
 
     Sprite::render();
 }
