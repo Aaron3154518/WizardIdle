@@ -3,33 +3,55 @@
 #include "../Game.h"
 
 // Power Wizard
-PowerWizard::PowerWizard() : mFireballs(FireballHandler({WIZARD})) {
-    mFireballs.setImage("fireball2");
+const std::vector<int> PowerWizard::TARGETS = {WIZARD};
+
+PowerWizard::PowerWizard(int id) : Sprite(id), mFireballs{id, TARGETS} {
+    mFireballs.setFireballImage("fireball2");
+    mFireballs.setDelay(5000);
+    for (int id : TARGETS) { mMultis[id] = 1; }
 }
 void PowerWizard::init() {
     int w = Game::get().icon_w;
     mRect = Rect::getMinRect(Game::get().assets.getAsset(getImage()), w, w);
     mRect.setCenter(-Game::get().icon_w * 2, 0.);
 
-    mUpgrades = std::vector<Upgrade*> {};
+    mFireballs.toggleVisibility();
+    mUpgrades = std::vector<Upgrade*> { &mFireballs };
     Sprite::init();
 }
 void PowerWizard::update(Timestep ts) {
-    std::vector<Fireball> vec = mFireballs.update(ts);
-    for (Fireball& f : vec) {
+    for (auto it = mMultis.begin(); it != mMultis.end(); ++it) {
+        if (it->second > 1) {
+            auto& m = mMultiMessages[it->first];
+            it->second *= pow(.8, ts.GetSeconds());
+            if (it->second <= 1) {
+                it->second = 1;
+                m->mActive = false;
+            } else {
+                std::stringstream ss;
+                ss << "x" << it->second;
+                m->setText(ss.str());
+            }
+       }
+    }
+
+    mFireballs.power = power;
+//    std::vector<Fireball> vec = mFireballs.update(ts);
+    for (Fireball& f : mFireballs.getCollided()) {
         std::stringstream ss;
         switch (f.mTarget) {
             case WIZARD:
-                ss << "+" << power << "x";
-                Game::get().wizards.wizard.addMessage(ss.str(), CYAN);
-                Game::get().wizards.wizard.basePower = power;
+                mMultis[WIZARD] = power;
+                ss << "x" << power;
+                auto& m = mMultiMessages[WIZARD];
+                if (!m || !m->mActive) {
+                    Wizard& w = Game::get().wizards.wizard;
+                    m = w.newMessage(ss.str(), BLUE, -1);
+                }
                 break;
         }
     }
-    vec.clear();
-    if (mFireballs.ready()) {
-        mFireballs.newFireball(mRect.cX(), mRect.cY(), power);
-    }
+//    vec.clear();
 
     Sprite::update(ts);
 }

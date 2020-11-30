@@ -21,10 +21,10 @@ class WizardData {
 public:
     UpgradeManager upgradeManager;
 
-    Crystal crystal;
-    Catalyst catalyst;
-    Wizard wizard;
-    PowerWizard powerWizard;
+    Crystal crystal = Crystal(CRYSTAL);
+    Catalyst catalyst = Catalyst(CATALYST);
+    Wizard wizard = Wizard(WIZARD);
+    PowerWizard powerWizard = PowerWizard(POWER_WIZARD);
 
     WizardData() = default;
     ~WizardData() = default;

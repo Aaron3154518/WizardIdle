@@ -11,6 +11,7 @@
 #include "../Number.h"
 #include "../Tools.h"
 #include "../AssetManager.h"
+#include "Upgrade.h"
 
 // Forward Declaration
 class WizardData;
@@ -37,30 +38,32 @@ private:
     std::string mImg = "fireball";
 };
 
-class FireballHandler {
+class FireballHandler : public Upgrade {
 public:
-    FireballHandler() = default;
-    FireballHandler(std::vector<int> targets) : mTargets(targets) {}
+    Number power;
+
+    FireballHandler(int spriteId, std::vector<int> targets);
     ~FireballHandler() = default;
 
-    std::vector<Fireball> update(Timestep ts);
+    void init() { setDescription("Select where to shoot fireballs"); updateImage(); }
+    void levelUp();
+    void update(Timestep ts);
     void render();
 
-    void setDelay(int delay) { mTimer = mDelay = delay; }
-    bool ready() { return mTimer <= 0; }
-    void newFireball(double x, double y, Number data);
+    std::vector<Fireball> getCollided();
 
-    void setImage(std::string img) { mImg = img; }
-    int nextTarget();
+    void setDelay(int delay) { mTimer = mDelay = delay; }
+
+    void setFireballImage(std::string img) { mFImg = img; }
     int getTarget() { return mTargets.size() == 0 ? -1 : mTargets.at(mTIdx); }
     void setTarget(int target);
 private:
-    std::string mImg = "fireball";
-    int mTIdx = 0;
+    std::string mFImg = "fireball";
+    int mSId = 0, mTIdx = 0;
     std::vector<int> mTargets;
     int mTimer = 0, mDelay = 50 * pow(1.25, 20) / 3;
-    std::vector<Fireball> mFireballs;
+    std::vector<Fireball> mFireballs, mCollided;
+
+    void updateImage();
 };
-
-
 #endif /* FIREBALL_h */

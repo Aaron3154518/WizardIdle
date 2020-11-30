@@ -33,48 +33,80 @@ bool Sprite::noDrag(Sprite& s, Event& e) {
 }
 
 void Sprite::init() {
-    mText.fontId = SMALL_FONT;
-    mText.w = Game::get().icon_w * 6;
     mUpgrades.init();
 }
-
 void Sprite::update(Timestep ts) {
-    if (mMessageY != 0) {
-        double dy = std::max(mMessageY, (double)Game::get().text_h) / 20.;
-        mMessageY -= dy;
-        if (mMessageY < 0) { mMessageY = 0; }
-    }
-    bool top = true;
-    for (auto it = mMessages.begin(); it != mMessages.end(); ++it) {
-        it->timer -= ts.GetMilliseconds();
-        if (top && it->timer <= 0) {
-            mMessageY += it->rect.h;
-            it->destroy();
+    double lastY = 0.;
+    for (auto it = mMessages.begin(); it != mMessages.end();) {
+        if (!(*it)->permanent()) {
+            (*it)->mTimer -= ts.GetMilliseconds();
+            if ((*it)->mTimer <= 0) { (*it)->mActive = false; }
+        }
+        if (!(*it)->mActive) {
             it = mMessages.erase(it);
-            if (it == mMessages.end()) { break; }
-        } else { top = false; }
+            continue;
+        }
+        double diff = (*it)->mY - lastY;
+        if (diff != 0.) {
+            int sign = diff < 0 ? -1 : 1;
+            double dy = std::max((double)Game::get().text_h, std::abs(diff));
+            dy = std::min(std::abs(diff), dy * ts.GetSeconds()) * sign;
+            (*it)->mY -= dy;
+        }
+        lastY = (*it)->bottom();
+        ++it;
     }
 
     mUpgrades.update(ts);
 }
-
 void Sprite::render() {
-    int y = (int)(mRect.y2() + mMessageY + .5);
+    int y = (int)(mRect.y2() + .5);
     double cX = mRect.cX();
-    for (Message m : mMessages) { 
-        m.rect.y = y;
-        m.rect.setCenterX(cX);
-        m.rect = Game::get().getAbsRect(m.rect);
-        Game::get().assets.drawTexture(m.tex, m.rect, NULL);
-        y += m.rect.h;
+    for (auto& m : mMessages) {
+        Rect r = m->mRect;
+        r.y = y + m->mY;
+        r.setCenterX(cX);
+        r = Game::get().getAbsRect(r);
+        Game::get().assets.drawTexture(m->getTexture(), r, NULL);
     }
 }
+MessagePtr Sprite::newMessage(std::string text, SDL_Color color, int ms) {
+    double y = 0.;
+    if (!mMessages.empty()) {
+        y = mMessages.back()->bottom();
+    }
+    mMessages.push_back(std::make_shared<Message>(text, color, ms));
+    mMessages.back()->mY = y;
+    return mMessages.back();
+}
 
-void Sprite::addMessage(std::string text, SDL_Color color) {
-    if (text == "") { return; }
-    mText.text = text; mText.color = color;
-    mMessages.push_back(Message()); // Push back now so we don't copy m.tex
-    Message& m = mMessages.back();
-    m.tex = Game::get().assets.renderTextWrapped(mText, m.rect);
-
+// Message
+Message::Message(std::string text, SDL_Color color, int ms) : mTimer(ms) {
+    mText.fontId = SMALL_FONT;
+    mText.w = Game::get().icon_w * 6;
+    mText.text = text;
+    mText.color = color;
+    redraw();
+}
+Message::Message(const Message& m) : mActive(m.mActive), mTimer(m.mTimer), 
+    mY(m.mY), mRect(m.mRect), mText(m.mText) {
+    redraw();
+}
+Message& Message::operator=(const Message& m) {
+    mActive = m.mActive;
+    mTimer = m.mTimer;
+    mY = m.mY;
+    mRect = m.mRect;
+    mText = m.mText;
+    redraw();
+    return *this;
+}
+void Message::redraw() {
+    destroy();
+    mTex = Game::get().assets.renderTextWrapped(mText, mRect);
+}
+void Message::destroy() {
+    if(mTex != nullptr) {
+        SDL_DestroyTexture(mTex);
+    }
 }

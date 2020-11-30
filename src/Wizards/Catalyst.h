@@ -10,10 +10,9 @@
 
 class Catalyst : public Sprite {
 public:
-    Number points;
+    using Sprite::Sprite;
 
-    Catalyst() = default;
-    ~Catalyst() = default;
+    Number points;
 
     void init();
 //    void update(Timestep ts);

@@ -52,7 +52,7 @@ void Catalyst::addMagic(Number add) {
         if (points != oldPoints) {
             std::stringstream ss;
             ss << "+" << (points - oldPoints) << "UP";
-            addMessage(ss.str(), BLUE);
+            newMessage(ss.str(), BLUE);
         }
     }
 }

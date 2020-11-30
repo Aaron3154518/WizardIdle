@@ -1,6 +1,7 @@
 #ifndef WIZARD_h
 #define WIZARD_h
 
+#include <vector>
 #include <array>
 
 #include "../Rect.h"
@@ -12,10 +13,11 @@
 
 class Wizard : public Sprite {
 public:
+    using Sprite::Sprite;
+ 
     Number basePower = 1., power = 1.;
 
-    Wizard();
-    ~Wizard() = default;
+    Wizard(int id);
 
     void init();
     void update(Timestep ts);
@@ -24,18 +26,8 @@ public:
 
     std::string getImage() { return "wizard"; }
 private:
+    const static std::vector<int> TARGETS;
     FireballHandler mFireballs;
-    class TargetU : public Upgrade {
-    public:
-        TargetU();
-
-        void init() { setDescription("Select where to shoot fireballs"); }
-        void levelUp();
-    private:
-        int mTarget;
-    };
-public:
-    TargetU target_u;
 };
 
 #endif /* WIZARD_h */

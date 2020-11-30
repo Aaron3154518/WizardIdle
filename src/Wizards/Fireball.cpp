@@ -25,18 +25,35 @@ void Fireball::setSize(int size) {
     mRect.resizeFactor((double)size / mSize, true);
     mSize = size;
 }
- 
-std::vector<Fireball> FireballHandler::update(Timestep ts) {
-    mTimer -= ts.GetMilliseconds();
-    std::vector<Fireball> vec;
-    for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
+
+// Fireball Handler
+FireballHandler::FireballHandler(int spriteId, std::vector<int> targets) :
+    Upgrade(-1, "", [&](){
+            return "Currently: " + Game::get().wizards.getSprite(getTarget()).getImage();
+            }), mSId(spriteId), mTargets(targets) {}
+void FireballHandler::update(Timestep ts) {
+    for (auto it = mFireballs.begin(); it != mFireballs.end();) {
         if (it->update(Game::get().wizards.getSprite(it->mTarget).mRect, ts)) {
-            vec.push_back(*it);
+            mCollided.push_back(*it);
             it = mFireballs.erase(it);
-            if (it == mFireballs.end()) { break; }
+            continue;
+        }
+        ++it;
+    }
+    if (mTargets.size() != 0 &&
+            Game::get().wizards.getSprite(getTarget()).mVisible) {
+        mTimer -= ts.GetMilliseconds();
+        if (mTimer <= 0) {
+            mTimer = mDelay;
+            Sprite& s = Game::get().wizards.getSprite(mSId);
+            Fireball f(s.mRect.cX(), s.mRect.cY());
+            f.mTarget = mTargets.at(mTIdx);
+            f.mData = power;
+            f.setSize((int)(Game::get().icon_w / 2));
+            f.setImage(mFImg);
+            mFireballs.push_back(f);
         }
     }
-    return vec;
 }
 void FireballHandler::render() {
     for (Fireball& f : mFireballs) {
@@ -44,36 +61,31 @@ void FireballHandler::render() {
         Game::get().assets.drawTexture(f.getImage(), r, NULL);
     }
 }
-void FireballHandler::newFireball(double x, double y, Number data) {
-    if (mTargets.size() == 0 ||
-            !Game::get().wizards.getSprite(mTargets.at(mTIdx)).mVisible) {
-        return;
-    }
-    mTimer = mDelay;
-    Fireball f(x, y);
-    f.mTarget = mTargets.at(mTIdx);
-    f.mData = data;
-    f.setSize((int)(Game::get().icon_w / 2));
-    f.setImage(mImg);
-    mFireballs.push_back(f);
-}
-
-int FireballHandler::nextTarget() {
-    if (mTargets.size() == 0) { return -1; }
-    int oldTarget = mTIdx;
+void FireballHandler::levelUp() {
+    if (mTargets.size() <= 1) { return; }
+    int oldIdx = mTIdx;
     mTIdx = (mTIdx + 1) % mTargets.size();
-    while (mTIdx != oldTarget && !Game::get().wizards.getSprite(mTargets.at(mTIdx)).mVisible) {
+    while (mTIdx != oldIdx && !Game::get().wizards.getSprite(getTarget()).mVisible) {
         mTIdx = (mTIdx + 1) % mTargets.size();
     }
-    return mTargets.at(mTIdx);
+    if (mTIdx != oldIdx) { updateImage(); }
 }
-
+std::vector<Fireball> FireballHandler::getCollided() {
+    std::vector<Fireball> vecCopy = mCollided;
+    mCollided.clear();
+    return vecCopy;
+}
 void FireballHandler::setTarget(int target) {
     int i = 0;
     for (int t : mTargets) {
-        if (t == target) { mTIdx = i; return; }
+        if (t == target) { mTIdx = i; updateImage(); return; }
         ++i;
     }
     mTargets.push_back(target);
     mTIdx = mTargets.size() - 1;
+    updateImage();
+}
+void FireballHandler::updateImage() {
+    mImg = Game::get().wizards.getSprite(getTarget()).getImage();
+    updateMe = true;
 }

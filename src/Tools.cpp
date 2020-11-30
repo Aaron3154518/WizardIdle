@@ -32,11 +32,12 @@ void Event::update(SDL_Event& e) {
 }
 
 void Value::apply() {
-    m_val = m_baseVal;
-    for (auto it = m_add.begin(); it != m_add.end(); ++it)
-        m_val += it->second;
-    for (auto it = m_mult.begin(); it != m_mult.end(); ++it)
-        m_val *= it->second;
-    for (auto it = m_pow.begin(); it != m_pow.end(); ++it)
-        m_val ^= it->second;
+    mVal = mBaseVal;
+    for (auto it = mAdd.begin(); it != mAdd.end(); ++it)
+        mVal += it->second;
+    for (auto it = mMult.begin(); it != mMult.end(); ++it)
+        mVal *= it->second;
+    for (auto it = mPow.begin(); it != mPow.end(); ++it)
+        mVal ^= it->second;
+    mUpdate = false;
 }

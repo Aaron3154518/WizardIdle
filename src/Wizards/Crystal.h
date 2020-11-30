@@ -10,10 +10,9 @@
 
 class Crystal : public Sprite {
 public:
-    Number magic;
+    using Sprite::Sprite;
 
-    Crystal() = default;
-    ~Crystal() = default;
+    Number magic;
 
     void init();
 //    void update(Timestep ts);

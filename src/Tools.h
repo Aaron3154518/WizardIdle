@@ -61,22 +61,25 @@ private:
 class Value {
 public:
     Value() = default;
-    Value(const Number& baseVal) : m_baseVal(baseVal) {}
+    Value(const Number& num) : mBaseVal(num) {}
     ~Value() = default;
 
     void apply();
 
-    const Number& getBaseValue() const { return m_baseVal; }
-    const Number& getValue() const { return m_val; }
+    void setBaseValue(const Number& val) { mBaseVal = val; mUpdate = true; }
+    const Number& getBaseValue() const { return mBaseVal; }
+    const Number& getValue() { if(mUpdate) { apply(); } return mVal; }
 
-    void newAdd(const std::string& key, const Number& val) { m_add[key] = val; }
-    void newMult(const std::string& key, const Number& val) { m_mult[key] = val; }
-    void newPow(const std::string& key, const double& val) { m_pow[key] = val; }
+    operator Number() { return getValue(); }
 
+    void newAdd(const std::string& key, const Number& val) { mAdd[key] = val; mUpdate = true; }
+    void newMult(const std::string& key, const Number& val) { mMult[key] = val; mUpdate = true; }
+    void newPow(const std::string& key, const double& val) { mPow[key] = val; mUpdate = true; }
 private:
-    Number m_baseVal, m_val;
-    std::unordered_map<std::string, Number> m_add, m_mult;
-    std::unordered_map<std::string, double> m_pow;
+    bool mUpdate = true;
+    Number mBaseVal, mVal;
+    std::unordered_map<std::string, Number> mAdd, mMult;
+    std::unordered_map<std::string, double> mPow;
 };
 
 #endif /* TOOLS_h */

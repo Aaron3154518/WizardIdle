@@ -2,6 +2,7 @@
 #define SPRITE_h
 
 #include <vector>
+#include <memory>
 
 #include <SDL.h>
 
@@ -10,12 +11,40 @@
 #include "../AssetManager.h"
 #include "Upgrade.h"
 
+class Message {
+public:
+    bool mActive = true;
+    int mTimer = 2500;
+    double mY = 0.;
+    Rect mRect;
+  
+    Message(std::string text = "Hello World", SDL_Color color = BLACK, int ms = 2500);
+    Message(const Message& m);
+    Message& operator=(const Message& m);
+    ~Message() { destroy(); }
+
+    SDL_Texture* getTexture() { return mTex; }
+    void setText(std::string text) { mText.text = text; redraw(); }
+    void setColor(SDL_Color color) { mText.color = color; redraw(); }
+    bool permanent() { return mTimer == -1; }
+    double bottom() { return mY + mRect.h; }
+private:
+    TextData mText;
+    SDL_Texture* mTex = nullptr;
+
+    void redraw();
+    void destroy();
+};
+
+typedef std::shared_ptr<Message> MessagePtr;
+
 class Sprite {
 public:
-    bool mVisible = false, mDragging = false;
+    const int mId = 0;
+    bool mVisible = false;
     Rect mRect;
 
-    Sprite() = default;
+    Sprite(int id) : mId(id) {}
     ~Sprite() = default;
 
     virtual void init();
@@ -28,22 +57,12 @@ public:
 
     static bool drag(Sprite& s, Event& e);
     static bool noDrag(Sprite& s, Event& e);
-    void addMessage(std::string text, SDL_Color color = BLACK);
+    MessagePtr newMessage(std::string text = "Hello World", SDL_Color color = BLACK, int ms = 2500);
 protected:
     UpgradeVector mUpgrades;
 private:
-    struct Message {
-        SDL_Texture* tex;
-        Rect rect;
-        int timer = 2500;
-
-        void destroy() {
-            if(tex != nullptr) { SDL_DestroyTexture(tex); }
-        }
-    };
-    double mMessageY = 0.;
-    TextData mText;
-    std::vector<Message> mMessages;
+    bool mDragging = false;
+    std::vector<MessagePtr> mMessages;
 };
 
 #endif /* SPRITE_h */
