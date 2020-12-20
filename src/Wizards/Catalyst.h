@@ -12,8 +12,6 @@ class Catalyst : public Sprite {
 public:
     using Sprite::Sprite;
 
-    Number points;
-
     void init();
 //    void update(Timestep ts);
     void handleEvent(Event& e);
@@ -22,9 +20,12 @@ public:
     std::string getImage() { return "catalyst"; }
 
     void addMagic(Number add);
-    const Number& getMagic() { return magic; }
+    void usePoints(Number amnt);
+    Number getMagic() { return magic; }
+    Number getPoints() { return points; }
 private:
-    Number capacity = 10, goal = 100, magic;
+    Number capacity = Number(10), magic, points;
+    Number goal = Number(1,2), goalFactor = Number(2.5);
     TextData pointsText, magicText;
 };
 

@@ -1,11 +1,11 @@
 #include "Sprite.h"
 #include "../Game.h"
 
-bool Sprite::drag(Sprite& s, Event& e) {
+void Sprite::drag(Sprite& s, Event& e) {
     if (e.left.clicked) {
         if (!s.mDragging && SDL_PointInRect(&e.globalMouse, &s.mRect)) {
             e.handled = true;
-            return true;
+            Game::get().wizards.upgradeManager.select(s.mId);
         }
         if (s.mDragging) {
             s.mDragging = false;
@@ -22,14 +22,12 @@ bool Sprite::drag(Sprite& s, Event& e) {
         s.mRect.setCenter(e.globalMouse.x, e.globalMouse.y);
         e.handled = true;
     }
-    return false;
 }
-bool Sprite::noDrag(Sprite& s, Event& e) {
+void Sprite::noDrag(Sprite& s, Event& e) {
     if (e.left.clicked && SDL_PointInRect(&e.globalMouse, &s.mRect)) {
         e.handled = true;
-        return true;
+        Game::get().wizards.upgradeManager.select(s.mId);
     }
-    return false;
 }
 
 void Sprite::init() {

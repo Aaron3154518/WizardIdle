@@ -42,7 +42,7 @@ void Wizard::update(Timestep ts) {
     Sprite::update(ts);
 }
 void Wizard::handleEvent(Event& e) {
-    if (drag(*this, e)) { Game::get().wizards.upgradeManager.select(WIZARD); }
+    drag(*this, e);
 //    Game::get().wizards.catalyst.mRect.setX2(mRect.x);
 //    Game::get().wizards.catalyst.mRect.setCenterY(mRect.cY());
 }

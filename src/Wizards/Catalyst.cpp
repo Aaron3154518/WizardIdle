@@ -19,7 +19,7 @@ void Catalyst::init() {
     Sprite::init();
 }
 void Catalyst::handleEvent(Event& e) {
-    if (noDrag(*this, e)) { Game::get().wizards.upgradeManager.select(CATALYST); }
+    noDrag(*this, e);
 }
 void Catalyst::render() {
     Rect r = Game::get().getAbsRect(mRect);
@@ -42,17 +42,18 @@ void Catalyst::render() {
 void Catalyst::addMagic(Number add) {
     if (points < capacity) {
         magic += add;
-        Number oldPoints = points;
-        while (magic >= goal) {
-            points += 1;
-            if (points == capacity) { magic = 0; break; }
+        if (magic >= goal) {
+            int newPoints = (int)(magic / goal).logBase(goalFactor).toDouble() + 1;
+            points += newPoints;
+            if (points >= capacity) { magic = 0; points = capacity; }
             else { magic -= goal; }
-            goal ^= 1.2;
-        }
-        if (points != oldPoints) {
+            goal *= goalFactor ^ newPoints;
             std::stringstream ss;
-            ss << "+" << (points - oldPoints) << "UP";
+            ss << "+" << newPoints << "UP";
             newMessage(ss.str(), BLUE);
         }
     }
+}
+void Catalyst::usePoints(Number amnt) {
+     
 }

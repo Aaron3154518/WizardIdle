@@ -36,7 +36,6 @@ void PowerWizard::update(Timestep ts) {
     }
 
     mFireballs.power = power;
-//    std::vector<Fireball> vec = mFireballs.update(ts);
     for (Fireball& f : mFireballs.getCollided()) {
         std::stringstream ss;
         switch (f.mTarget) {
@@ -51,12 +50,11 @@ void PowerWizard::update(Timestep ts) {
                 break;
         }
     }
-//    vec.clear();
 
     Sprite::update(ts);
 }
 void PowerWizard::handleEvent(Event& e) {
-    if (Sprite::drag(*this, e)) { Game::get().wizards.upgradeManager.select(POWER_WIZARD); }
+    drag(*this, e);
 }
 void PowerWizard::render() {
     Rect r = Game::get().getAbsRect(mRect);

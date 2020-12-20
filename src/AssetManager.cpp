@@ -229,16 +229,11 @@ void AssetManager::drawTextWrapped(TextData& data, Rect* boundary, Uint32 bkgrnd
 
 void AssetManager::drawProgressBar(Number amnt, Number cap, Rect& rect,
         SDL_Color color, SDL_Color bkgrnd) const {
-    Number quot;
-    if (cap != 0) { quot = amnt / cap; }
-    else { quot = 1; }
-    double frac = quot.getValue();
-    if (quot > 1) { frac = 1.; } 
-    else if (quot < 1 / rect.w) { frac = 0.; }
-    else { frac *= pow(10, quot.getExponent()); }
+    Number quot(cap == 0 ? 1 : amnt / cap);
+    int w = fmax(0, fmin(1, quot.toDouble())) * rect.w;
     Game::get().setDrawColor(bkgrnd);
     SDL_RenderFillRect(Game::get().renderer, &rect);
-    Rect r = Rect(rect.x, rect.y, (int)(rect.w * frac), rect.h);
+    Rect r = Rect(rect.x, rect.y, w, rect.h);
     Game::get().setDrawColor(color);
     SDL_RenderFillRect(Game::get().renderer, &r);
     Game::get().setDrawColor(BLACK);

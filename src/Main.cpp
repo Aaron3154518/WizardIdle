@@ -6,7 +6,7 @@
 #include "Number_unittest.cpp"
 
 int main(int argc, char* argv[]) {
-    if (false) {
+    if(false) {
         runTests();
         return 0;
     }

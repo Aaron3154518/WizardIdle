@@ -55,8 +55,8 @@ public:
     virtual std::string getImage() { return ""; }
     UpgradeVector& getUpgrades() { return mUpgrades; }
 
-    static bool drag(Sprite& s, Event& e);
-    static bool noDrag(Sprite& s, Event& e);
+    static void drag(Sprite& s, Event& e);
+    static void noDrag(Sprite& s, Event& e);
     MessagePtr newMessage(std::string text = "Hello World", SDL_Color color = BLACK, int ms = 2500);
 protected:
     UpgradeVector mUpgrades;

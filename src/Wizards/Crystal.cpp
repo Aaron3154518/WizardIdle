@@ -21,7 +21,7 @@ void Crystal::init() {
     Sprite::init();
 }
 void Crystal::handleEvent(Event& e) {
-    if (Sprite::noDrag(*this, e)) { Game::get().wizards.upgradeManager.select(CRYSTAL); }
+    noDrag(*this, e);
 }
 void Crystal::render() {
     Rect r = Game::get().getAbsRect(mRect);
@@ -43,7 +43,7 @@ Crystal::MultU::MultU() :
             return ss.str();
             }) {}
 void Crystal::MultU::update(Timestep ts) {
-    effect = ((Game::get().wizards.crystal.magic + 1).logBase(10) + 1) ^ 1.5;
+    effect = (max(Game::get().wizards.crystal.magic, 10)).logBase(10) ^ 1.8;
 }
 
 // Wizard Upgrade
@@ -70,9 +70,14 @@ Crystal::CatalystU::CatalystU() :
             }) {}
 void Crystal::CatalystU::levelUp() {
     ++mLevel;
-    Game::get().wizards.catalyst.mVisible = true;
-    Game::get().wizards.crystal.magic -= Game::get().wizards.crystal.cost;
-    Game::get().wizards.crystal.cost ^= 1.9;
+    auto& wizards = Game::get().wizards;
+    wizards.catalyst.mVisible = true;
+    wizards.crystal.magic -= wizards.crystal.cost;
+    if (!wizards.powerWizard.mVisible) { wizards.crystal.cost = Number(1, 4); }
+    else {
+        wizards.crystal.cost ^= 1.9;
+        // Toggle idle/time wizard_u vis
+    }
 }
 bool Crystal::CatalystU::canBuy() {
     return mLevel == 0 && Game::get().wizards.crystal.cost <= Game::get().wizards.crystal.magic;
@@ -89,9 +94,14 @@ Crystal::PowerWizardU::PowerWizardU() :
             }) {}
 void Crystal::PowerWizardU::levelUp() {
     ++mLevel;
-    Game::get().wizards.powerWizard.mVisible = true;
-    Game::get().wizards.crystal.magic -= Game::get().wizards.crystal.cost;
-    Game::get().wizards.crystal.cost ^= 1.9;
+    auto& wizards = Game::get().wizards;
+    wizards.powerWizard.mVisible = true;
+    wizards.crystal.magic -= wizards.crystal.cost;
+    if (!wizards.catalyst.mVisible) { wizards.crystal.cost = Number(1, 4); }
+    else {
+        wizards.crystal.cost ^= 1.9;
+        // Toggle idle/time wizard_u vis
+    }
 }
 bool Crystal::PowerWizardU::canBuy() {
     return mLevel == 0 && Game::get().wizards.crystal.cost <= Game::get().wizards.crystal.magic;
