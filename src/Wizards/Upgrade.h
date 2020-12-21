@@ -18,9 +18,10 @@ class Upgrade {
 public:
     bool updateMe = false;
 
+    Upgrade() = default;
     Upgrade(int maxLevel, std::string img, InfoFunc func = []() { return "No Text Provided"; }) :
-        mMaxLevel(maxLevel), mImg(img), getInfo(func) {}
-    Upgrade(InfoFunc func) : getInfo(func) {}
+        mMaxLevel(maxLevel), mImg(img), mGetInfo(func) {}
+//    Upgrade(InfoFunc func) : mGetInfo(func) {}
     ~Upgrade();
 
     virtual void init () { setDescription("No Description Provided"); }
@@ -32,7 +33,7 @@ public:
 
     bool maxLevel() { return mLevel == mMaxLevel; }
     bool visible() { return mVisible; }
-    void toggleVisibility() { mVisible = !mVisible; updateMe = true; }
+    void setVisible(bool vis) { mVisible = vis; updateMe = true; }
 
     virtual bool canBuy() { return mMaxLevel == -1 || mLevel < mMaxLevel; }
 protected:
@@ -41,9 +42,9 @@ protected:
     bool mVisible = false;
 
     std::string mImg = "";
+    InfoFunc mGetInfo = []() { return "No Text Provided"; };
 private:
     TextData infoText;
-    InfoFunc getInfo;
     Rect mDescRect;
     SDL_Texture* mDesc;
 };

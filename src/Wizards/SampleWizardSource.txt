@@ -2,6 +2,8 @@
 #include "../Game.h"
 
 // Name Wizard
+NameWizard::NameWizard() : Sprite(NAME_WIZARD) {}
+
 void NameWizard::init() {
     Sprite::init();
 }

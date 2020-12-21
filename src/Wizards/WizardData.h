@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 
+#include "../Definitions.h"
 #include "../Tools.h"
 #include "Sprite.h"
 #include "Crystal.h"
@@ -12,19 +13,14 @@
 #include "PowerWizard.h"
 #include "Upgrade.h"
 
-constexpr int CRYSTAL = 0;
-constexpr int CATALYST = 1;
-constexpr int WIZARD = 2;
-constexpr int POWER_WIZARD = 3;
-
 class WizardData {
 public:
     UpgradeManager upgradeManager;
 
-    Crystal crystal = Crystal(CRYSTAL);
-    Catalyst catalyst = Catalyst(CATALYST);
-    Wizard wizard = Wizard(WIZARD);
-    PowerWizard powerWizard = PowerWizard(POWER_WIZARD);
+    Crystal crystal;
+    Catalyst catalyst;
+    Wizard wizard;
+    PowerWizard powerWizard;
 
     WizardData() = default;
     ~WizardData() = default;
@@ -37,6 +33,7 @@ public:
     
     // Getters
     Sprite& getSprite(int id);
+    bool isVisible(int id) { return getSprite(id).visible(); }
 private:
     std::vector<Sprite*> mSprites = { &crystal, &catalyst, &wizard, &powerWizard };
 };

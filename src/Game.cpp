@@ -107,9 +107,9 @@ void Game::handleEvents() {
     event.handled = false;
     if (!mDragging) {
         wizards.handleEvent(event);
-        if (!event.handled && event.left.clicked) {
+/*        if (!event.handled && event.left.clicked) {
             wizards.crystal.magic *= 10;
-        }
+        }*/
     }
     if (!event.handled) {
         if (event.left.clicked) {

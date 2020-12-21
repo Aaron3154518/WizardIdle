@@ -11,7 +11,7 @@ void WizardData::clean() {
 void WizardData::update(Timestep ts) {
     // Custom update order? (or just custom update no function calls)
     for (Sprite* s : mSprites) {
-        if (s->mVisible) { s->update(ts); }
+        if (s->visible()) { s->update(ts); }
     }
     upgradeManager.update(ts);
 }
@@ -20,12 +20,12 @@ void WizardData::handleEvent(Event& e) {
     for (auto it = mSprites.end(); it != mSprites.begin();) {
         --it;
         if (e.handled) { return; }
-        if ((*it)->mVisible) { (*it)->handleEvent(e); }
+        if ((*it)->visible()) { (*it)->handleEvent(e); }
     }
 }
 void WizardData::render() {
     for (Sprite* s : mSprites) {
-        if (s->mVisible) { s->render(); }
+        if (s->visible()) { s->render(); }
     }
     upgradeManager.render();
 }

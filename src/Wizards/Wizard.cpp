@@ -5,20 +5,23 @@
 // Wizard
 const std::vector<int> Wizard::TARGETS = {CRYSTAL, CATALYST};
 
-Wizard::Wizard(int id) : Sprite(id), mFireballs{id, TARGETS} {}
+Wizard::Wizard() : Sprite(WIZARD, "Wizard shoots fireballs at the crystal, "
+        "increasing its magic (M)"), mFireballs{WIZARD, TARGETS} {}
 void Wizard::init() {
     int w = Game::get().icon_w;
     mRect = Rect::getMinRect(Game::get().assets.getAsset(getImage()), w, w);
     mRect.setCenter(-Game::get().icon_w * 2, 0.);
 
-    mFireballs.toggleVisibility();
+    mFireballs.setVisible(true);
     mUpgrades = std::vector<Upgrade*> { &mFireballs };
     Sprite::init();
 }
 void Wizard::update(Timestep ts) {
+    auto& wizards = Game::get().wizards;
     power = basePower;
-    power *= Game::get().wizards.crystal.mult_u.effect;
-    power *= Game::get().wizards.powerWizard.getMulti(mId);
+    power *= wizards.crystal.mult_u.effect;
+    power *= wizards.powerWizard.getMulti(mId);
+    power *= wizards.catalyst.multi_u.getMulti(mId);
 
     mFireballs.power = power;
 //    std::vector<Fireball> vec = mFireballs.update(ts);

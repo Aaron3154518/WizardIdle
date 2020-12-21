@@ -28,9 +28,8 @@ void Fireball::setSize(int size) {
 
 // Fireball Handler
 FireballHandler::FireballHandler(int spriteId, std::vector<int> targets) :
-    Upgrade(-1, "", [&](){
-            return "Currently: " + Game::get().wizards.getSprite(getTarget()).getImage();
-            }), mSId(spriteId), mTargets(targets) {}
+    Upgrade(-1, "", [&](){ return "Target: " + mImg; }),
+    mSId(spriteId), mTargets(targets) {}
 void FireballHandler::update(Timestep ts) {
     for (auto it = mFireballs.begin(); it != mFireballs.end();) {
         if (it->update(Game::get().wizards.getSprite(it->mTarget).mRect, ts)) {
@@ -41,7 +40,7 @@ void FireballHandler::update(Timestep ts) {
         ++it;
     }
     if (mTargets.size() != 0 &&
-            Game::get().wizards.getSprite(getTarget()).mVisible) {
+            Game::get().wizards.isVisible(getTarget())) {
         mTimer -= ts.GetMilliseconds();
         if (mTimer <= 0) {
             mTimer = mDelay;
@@ -65,7 +64,7 @@ void FireballHandler::levelUp() {
     if (mTargets.size() <= 1) { return; }
     int oldIdx = mTIdx;
     mTIdx = (mTIdx + 1) % mTargets.size();
-    while (mTIdx != oldIdx && !Game::get().wizards.getSprite(getTarget()).mVisible) {
+    while (mTIdx != oldIdx && !Game::get().wizards.isVisible(getTarget())) {
         mTIdx = (mTIdx + 1) % mTargets.size();
     }
     if (mTIdx != oldIdx) { updateImage(); }

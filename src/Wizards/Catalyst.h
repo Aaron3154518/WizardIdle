@@ -1,6 +1,8 @@
 #ifndef CATALYST_h
 #define CATALYST_h
 
+#include <vector>
+
 #include "../Rect.h"
 #include "../Number.h"
 #include "../Tools.h"
@@ -10,7 +12,7 @@
 
 class Catalyst : public Sprite {
 public:
-    using Sprite::Sprite;
+    Catalyst();
 
     void init();
 //    void update(Timestep ts);
@@ -24,9 +26,25 @@ public:
     Number getMagic() { return magic; }
     Number getPoints() { return points; }
 private:
-    Number capacity = Number(10), magic, points;
-    Number goal = Number(1,2), goalFactor = Number(2.5);
+    Number magic, points;
+    Number capacity = Number(10), maxGain = Number(1);
+    Number goalBase = Number(50), goal = goalBase.copy(), goalFactor = Number(2.5);
     TextData pointsText, magicText;
+    class MultiU : public Upgrade {
+    public:
+        MultiU();
+
+        void init() { setDescription("Applies a multiplier to one wizard base on UP\nClick to change the target wizard"); }
+        void update(Timestep ts);
+        void levelUp();
+        Number getMulti(int id);
+    private:
+        static std::vector<int> TARGETS;
+        int mTIdx = 0;
+        Number mMulti = Number(1);
+    };
+public:
+    MultiU multi_u;
 };
 
 #endif /* CATALYST_h */

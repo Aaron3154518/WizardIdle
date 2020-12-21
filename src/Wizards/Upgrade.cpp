@@ -31,7 +31,7 @@ void Upgrade::renderDescription(SDL_Point pos) {
         Game::get().assets.drawTexture(mDesc, mDescRect, NULL);
     }
     infoText.x = mDescRect.cX(); infoText.y = mDescRect.y2();
-    infoText.text = getInfo();
+    infoText.text = mGetInfo();
     Game::get().assets.drawTextWrapped(infoText, NULL, toUint(bkgrnd));
 }
 

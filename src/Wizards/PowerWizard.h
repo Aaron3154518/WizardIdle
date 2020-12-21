@@ -12,9 +12,7 @@
 
 class PowerWizard : public Sprite {
 public:
-    using Sprite::Sprite;
-
-    PowerWizard(int id);
+    PowerWizard();
 
     void init();
     void update(Timestep ts);

@@ -9,7 +9,7 @@
 
 class NameWizard : public Sprite {
 public:
-    NameWizard() = default;
+    NameWizard();
     ~NameWizard() = default;
 
     void init();

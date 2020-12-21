@@ -41,10 +41,10 @@ typedef std::shared_ptr<Message> MessagePtr;
 class Sprite {
 public:
     const int mId = 0;
-    bool mVisible = false;
     Rect mRect;
 
-    Sprite(int id) : mId(id) {}
+    Sprite(int id, std::string description = "No Description Provided") :
+        mId(id), mDescription(description) {}
     ~Sprite() = default;
 
     virtual void init();
@@ -52,14 +52,19 @@ public:
     virtual void handleEvent(Event& e) {}
     virtual void render();
 
+    bool visible() { return mVisible; }
+    virtual void setVisible(bool vis) { mVisible = vis; }
     virtual std::string getImage() { return ""; }
+    std::string getDescription() { return mDescription; }
     UpgradeVector& getUpgrades() { return mUpgrades; }
 
     static void drag(Sprite& s, Event& e);
     static void noDrag(Sprite& s, Event& e);
     MessagePtr newMessage(std::string text = "Hello World", SDL_Color color = BLACK, int ms = 2500);
 protected:
+    bool mVisible = false;
     UpgradeVector mUpgrades;
+    std::string mDescription = "";
 private:
     bool mDragging = false;
     std::vector<MessagePtr> mMessages;

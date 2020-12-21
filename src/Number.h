@@ -6,6 +6,7 @@
 #include <cmath>
 #include <array>
 #include <string>
+#include <sstream>
 #include <limits>
 #include <stdexcept>
 
@@ -48,32 +49,39 @@ public:
     Number& power(const Number& num);
     Number& operator ^=(const Number& rhs) { power(rhs); return *this; }
 
-    // Math functions - fooIP() writes the result to the caller and returns the caller
-    //                - foo() returns the result as a separate object and returns that
+    // Math functions - foo() writes the result to and returns the caller
+    //                - fooCopy() writes the result to and returns a copy of the caller
     // returns x given n = 10^x (e.g. 10^10^10^9 would return 10^10^9)
-    Number& getExponentIP();
-    Number getExponent() const { return copy().getExponentIP(); }
+    Number& getExponent();
     // 1/n
-    Number& getReciprocalIP();
-    Number getReciprocal() const { return copy().getReciprocalIP(); }
+    Number& getReciprocal();
     // |n|
-    Number& absValIP() { mSign *= mSign; return *this; }
-    Number absVal() const { return copy().absValIP(); }
+    Number& absVal() { mSign *= mSign; return *this; }
     // 10^n
-    Number& powTenIP();
-    Number powTen() const { return copy().powTenIP(); }
+    Number& powTen();
     // log(n)
-    Number& logTenIP();
-    Number logTen() const { return copy().logTenIP(); }
+    Number& logTen();
     // logb(n)
-    Number& logBaseIP(Number base);
-    Number logBase(const Number& base) const { return copy().logBaseIP(base); }
+    Number& logBase(const Number& base);
+    // Floor and ceiling functions
+    Number& floorNum();
+    Number& ceilNum();
+
+    Number getExponentCopy() const { return copy().getExponent(); }
+    Number getReciprocalCopy() const { return copy().getReciprocal(); }
+    Number absValCopy() const { return copy().absVal(); }
+    Number powTenCopy() const { return copy().powTen(); }
+    Number logTenCopy() const { return copy().logTen(); }
+    Number logBaseCopy(const Number& base) const { return copy().logBase(base); }
+    Number floorCopy() const { return copy().floorNum(); }
+    Number ceilCopy() const { return copy().ceilNum(); }
 
     // Comparison Functions
     bool equal(const Number& other) const;
     bool less(const Number& other) const;
 
     void printAll() const;
+    std::string toString() const { std::stringstream ss; ss << *this; return ss.str(); }
 
     friend std::ostream& operator <<(std::ostream& os, const Number& rhs);
 
@@ -95,9 +103,18 @@ static bool operator <(const Number& lhs, const Number& rhs) { return lhs.less(r
 static bool operator <=(const Number& lhs, const Number& rhs) { return !rhs.less(lhs); }
 static bool operator >(const Number& lhs, const Number& rhs) { return rhs.less(lhs); }
 static bool operator >=(const Number& lhs, const Number& rhs) { return !lhs.less(rhs); }
-static Number min(const Number& a, const Number& b) { return a <= b ? a : b; }
-static Number max(const Number& a, const Number& b) { return a >= b ? a : b; }
 
 static double round(double val, double precision);
+static Number min(const Number& a, const Number& b) { return a <= b ? a : b; }
+static Number max(const Number& a, const Number& b) { return a >= b ? a : b; }
+/*// Math functions - these write to a copy of the number and return the copy
+static Number getExponent(const Number& num) { return num.copy().getExponent(); }
+static Number getReciprocal(const Number& num) { return num.copy().getReciprocal(); }
+static Number absVal(const Number& num) { return num.copy().absVal(); }
+static Number powTen(const Number& num) { return num.copy().powTen(); }
+static Number logTen(const Number& num) { return num.copy().logTen(); }
+static Number logBase(const Number& num, const Number& base) { return num.copy().logBase(base); }
+static Number floorNum(const Number& num) { return num.copy().floorNum(); }
+static Number ceilNum(const Number& num) { return num.copy().ceilNum(); }*/
 
 #endif

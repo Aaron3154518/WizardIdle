@@ -5,7 +5,9 @@
 // Power Wizard
 const std::vector<int> PowerWizard::TARGETS = {WIZARD};
 
-PowerWizard::PowerWizard(int id) : Sprite(id), mFireballs{id, TARGETS} {
+PowerWizard::PowerWizard() : Sprite(POWER_WIZARD, "The Power Wizard shoots "
+        "other wizards, giving them a boost that decays over time"),
+    mFireballs{POWER_WIZARD, TARGETS} {
     mFireballs.setFireballImage("fireball2");
     mFireballs.setDelay(5000);
     for (int id : TARGETS) { mMultis[id] = 1; }
@@ -15,7 +17,7 @@ void PowerWizard::init() {
     mRect = Rect::getMinRect(Game::get().assets.getAsset(getImage()), w, w);
     mRect.setCenter(-Game::get().icon_w * 2, 0.);
 
-    mFireballs.toggleVisibility();
+    mFireballs.setVisible(true);
     mUpgrades = std::vector<Upgrade*> { &mFireballs };
     Sprite::init();
 }

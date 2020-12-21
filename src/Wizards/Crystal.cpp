@@ -3,6 +3,7 @@
 #include "../Game.h"
 
 // Crystal
+Crystal::Crystal() : Sprite(CRYSTAL, "Crystal is evil") {}
 void Crystal::init() {
     int w = Game::get().icon_w * 2;
     mRect = Rect::getMinRect(Game::get().assets.getAsset(getImage()), w, w);
@@ -15,8 +16,8 @@ void Crystal::init() {
     magicText.yMode = BOTRIGHT;
     magicText.w = magicText.h = 0;
 
-    mult_u.toggleVisibility();
-    wizard_u.toggleVisibility();
+    mult_u.setVisible(true);
+    wizard_u.setVisible(true);
     mUpgrades = std::vector<Upgrade*> {&mult_u, &wizard_u, &catalyst_u, &powerWizard_u};
     Sprite::init();
 }
@@ -46,64 +47,44 @@ void Crystal::MultU::update(Timestep ts) {
     effect = (max(Game::get().wizards.crystal.magic, 10)).logBase(10) ^ 1.8;
 }
 
-// Wizard Upgrade
-Crystal::WizardU::WizardU() :
-    Upgrade(1, "wizard", [&]() { return mLevel == 0 ? "Free" : "Bought"; }) {}
-void Crystal::WizardU::levelUp() {
-    ++mLevel;
-    Game::get().wizards.wizard.mVisible = true;
-    Crystal& crystal = Game::get().wizards.crystal;
-    crystal.catalyst_u.toggleVisibility();
-    crystal.powerWizard_u.toggleVisibility();
-    crystal.cost = Number(1, 2);
-}
-
-// Catalyst Upgrade
-Crystal::CatalystU::CatalystU() :
-    Upgrade(1, "catalyst", [&]() {
-            if (mLevel == 0) {
-                std::stringstream ss;
-                ss << Game::get().wizards.crystal.cost << "M";
-                return ss.str().c_str();
-            }
-            return "Bought";
-            }) {}
-void Crystal::CatalystU::levelUp() {
-    ++mLevel;
-    auto& wizards = Game::get().wizards;
-    wizards.catalyst.mVisible = true;
-    wizards.crystal.magic -= wizards.crystal.cost;
-    if (!wizards.powerWizard.mVisible) { wizards.crystal.cost = Number(1, 4); }
-    else {
-        wizards.crystal.cost ^= 1.9;
-        // Toggle idle/time wizard_u vis
+// Wizard Unlock Upgrade
+Crystal::UnlockU::UnlockU(int id) : mId(id) {
+    mMaxLevel = 1;
+    if (id == WIZARD) {
+        mGetInfo = [&]() { return mLevel == 0 ? "Free" : "Bought"; };
+    } else {
+        mGetInfo = [&]() { return mLevel == 0 ?
+            Game::get().wizards.crystal.cost.toString() + "M" : "Bought"; };
     }
 }
-bool Crystal::CatalystU::canBuy() {
-    return mLevel == 0 && Game::get().wizards.crystal.cost <= Game::get().wizards.crystal.magic;
+void Crystal::UnlockU::init() {
+    mImg = Game::get().wizards.getSprite(mId).getImage(); 
+    setDescription("Unlock " + mImg + "\n" + Game::get().wizards.getSprite(mId).getDescription());
 }
-// Power Wizard Upgrade
-Crystal::PowerWizardU::PowerWizardU() :
-    Upgrade(1, "powerWizard", [&]() {
-            if (mLevel == 0) {
-                std::stringstream ss;
-                ss << Game::get().wizards.crystal.cost << "M";
-                return ss.str().c_str();
-            }
-            return "Bought";
-            }) {}
-void Crystal::PowerWizardU::levelUp() {
+void Crystal::UnlockU::levelUp() {
     ++mLevel;
     auto& wizards = Game::get().wizards;
-    wizards.powerWizard.mVisible = true;
-    wizards.crystal.magic -= wizards.crystal.cost;
-    if (!wizards.catalyst.mVisible) { wizards.crystal.cost = Number(1, 4); }
-    else {
-        wizards.crystal.cost ^= 1.9;
-        // Toggle idle/time wizard_u vis
+    wizards.getSprite(mId).setVisible(true);
+    setVisible(false);
+    Crystal& crystal = wizards.crystal;
+    crystal.magic -= crystal.cost;
+    switch(mId) {
+        case WIZARD:
+            crystal.catalyst_u.setVisible(true);
+            crystal.powerWizard_u.setVisible(true);
+            crystal.cost = Number(50);
+            break;
+        case CATALYST:
+        case POWER_WIZARD:
+            if (wizards.powerWizard.visible() && wizards.catalyst.visible()) {
+                wizards.crystal.cost ^= 1.9;
+                // Toggle idle/time wizard_u vis
+            } else { wizards.crystal.cost = Number(1, 4); }
+            break;
+        default:
+            break;
     }
 }
-bool Crystal::PowerWizardU::canBuy() {
+bool Crystal::UnlockU::canBuy() {
     return mLevel == 0 && Game::get().wizards.crystal.cost <= Game::get().wizards.crystal.magic;
 }
-

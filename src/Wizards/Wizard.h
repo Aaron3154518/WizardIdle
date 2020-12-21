@@ -13,11 +13,9 @@
 
 class Wizard : public Sprite {
 public:
-    using Sprite::Sprite;
- 
     Number basePower = 1., power = 1.;
-
-    Wizard(int id);
+  
+    Wizard();
 
     void init();
     void update(Timestep ts);

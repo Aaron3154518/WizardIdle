@@ -34,7 +34,7 @@ std::array<double, MAX_EXP * 2 + 1> Pows::pows;
 size_t Pows::lb = MAX_EXP - 1, Pows::ub = MAX_EXP + 1;*/
 
 Number::Number(int layer, double exp, int sign) :
-    mLayer(layer), mExp(exp), mSign(sign) {
+    mLayer(layer), mExp(exp), mSign((sign > 0) - (sign < 0)) {
     balance();
 }
 Number::Number(double val) : Number(0, std::abs(val),
@@ -69,8 +69,8 @@ Number::Number(std::string str) {
 }
 
 double Number::toDouble() const {
-    if (absVal() >= MAX_DOUBLE) { return mSign * std::numeric_limits<double>::max(); }
-    if (absVal() <= MIN_DOUBLE) { return mSign * std::numeric_limits<double>::min(); }
+    if (absValCopy() >= MAX_DOUBLE) { return mSign * std::numeric_limits<double>::max(); }
+    if (absValCopy() <= MIN_DOUBLE) { return mSign * std::numeric_limits<double>::min(); }
     if (mLayer == 0) { return mSign * mExp; }
     double val = mExp;
     for (int i = 1; i < abs(mLayer); ++i) { val = pow(10, val); }
@@ -187,7 +187,7 @@ Number& Number::multiply(const Number& num) {
         mSign *= num.mSign;
     } else {
         int sign = mSign * num.mSign;
-        getExponentIP().add(num.getExponent()).powTenIP();
+        getExponent().add(num.getExponentCopy()).powTen();
         mSign = sign;
     } 
     return *this;
@@ -202,7 +202,7 @@ Number& Number::divide(const Number& num) {
         balance();
     } else {
         int sign = mSign * num.mSign;
-        getExponentIP().subtract(num.getExponent()).powTenIP();
+        getExponent().subtract(num.getExponentCopy()).powTen();
         mSign = sign;
     } 
     return *this;
@@ -215,7 +215,7 @@ Number& Number::power(const Number& pow) {
     if (pow.mSign == 0) { mLayer = 0; mExp = 1.; mSign = 1; return *this; }
 
     int sign = mSign;
-    getExponentIP().multiply(pow).powTenIP();
+    getExponent().multiply(pow).powTen();
     // If our base is negative, we only want the real component of the answer
     // If the power's layer is greater than 0, rounding will cause pow to
     //     be a multiple of 10 and thus pow*pi will be a multiple of 2pi
@@ -227,7 +227,7 @@ Number& Number::power(const Number& pow) {
 }
 
 // Returns the numbers exponent (e.g. 10^10^x would return 10^x)
-Number& Number::getExponentIP() {
+Number& Number::getExponent() {
     if (mSign == 0) { return *this; }
     if (mLayer == 0) { mExp = log10(mExp); mSign = 1; }
     else {
@@ -239,7 +239,7 @@ Number& Number::getExponentIP() {
 }
 
 // Returns 1/number
-Number& Number::getReciprocalIP() {
+Number& Number::getReciprocal() {
     if (mSign == 0) { throw std::domain_error("Divide by zero error"); }
     if (mLayer == 0) { mExp = 1/mExp; }
     else { mLayer *= -1; }
@@ -248,7 +248,7 @@ Number& Number::getReciprocalIP() {
 }
 
 // Returns 10^n
-Number& Number::powTenIP() {
+Number& Number::powTen() {
     if (mSign == 0 || mLayer < 0) {
         mSign = mExp = 1;
         mLayer = 0;
@@ -261,16 +261,30 @@ Number& Number::powTenIP() {
 }
 
 // Returns log(n)
-Number& Number::logTenIP() {
+Number& Number::logTen() {
     if (mSign != 1) {
         throw std::domain_error("Cannot take log of negative number or 0");
     }
-    return getExponentIP();
+    return getExponent();
 }
 
 // Returns logb(n)
-Number& Number::logBaseIP(Number base) {
-    logTenIP().divide(base.logTenIP());
+Number& Number::logBase(const Number& base) {
+    logTen().divide(base.logTenCopy());
+    balance();
+    return *this;
+}
+
+// Floor and ceiling functions
+Number& Number::floorNum() {
+    if (mLayer < 0) { mSign = 0; }
+    else if (mLayer == 0) { mExp = floor(mExp); }
+    balance();
+    return *this;
+}
+Number& Number::ceilNum() {
+    if (mLayer < 0) { mLayer = 1; mExp = 1; mSign = 1; }
+    else if (mLayer == 0) { mExp = ceil(mExp); }
     balance();
     return *this;
 }
