@@ -114,7 +114,7 @@ void UpgradeManager::update(Timestep ts) {
     if (mScrollV != 0) {
         scroll(mScrollV * ts.GetSeconds());
         mScrollV *= pow(.3, ts.GetSeconds());
-        if (mScroll == 0 || abs(mScrollV) < 1.) { mScrollV = 0.; }
+        if (mScroll == 0 || std::abs(mScrollV) < 1.) { mScrollV = 0.; }
     }
 }
 
@@ -213,14 +213,14 @@ void UpgradeManager::redraw() {
     int sign = -1;
     bool left = true, front = true;
     auto nextX = [xRad, yRad, cx, cy, &w, &dw, &x, &sign, &front] {
-        double currW = w + dw * abs(x) / xRad;
+        double currW = w + dw * std::abs(x) / xRad;
         Rect r = Rect(0, 0, (int)currW, (int)currW);
         r.setCenter(x, (front ? 1 : -1) * yRad * sqrt(1 - x*x/(xRad*xRad)));
         r.shift(cx, cy);
         x += sign * currW * (front  ? .6 : .55);
         x = xRad * (2 * x + sign * w) / (2 * xRad - sign * dw);
         if (x < 0) {
-            double dx = -2 * dw * abs(x) / (sign * 2 * xRad + dw);
+            double dx = -2 * dw * std::abs(x) / (sign * 2 * xRad + dw);
             x -= dx;
         }
         return r;
@@ -232,7 +232,7 @@ void UpgradeManager::redraw() {
         w = Game::get().icon_w;
         dw = -w / 3.;
         x = (idx - scrollFrac) * Game::get().icon_w;
-        while(abs(x) <= abs(xRad) & 0 <= i && i < size) {
+        while(std::abs(x) <= std::abs(xRad) & 0 <= i && i < size) {
             mFrontRects[idxs.at(i)] = nextX();
             i += sign;
         }
