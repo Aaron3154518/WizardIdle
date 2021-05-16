@@ -1,0 +1,24 @@
+#include "NameWizard.h"
+#include "../Game.h"
+
+// Name Wizard
+NameWizard::NameWizard() : Sprite(NAME_WIZARD) {}
+
+void NameWizard::init() {
+    Sprite::init();
+}
+
+void NameWizard::update(Timestep ts) {
+    Sprite::update(ts);
+}
+
+void NameWizard::handleEvent() {
+   if (drag(*this, e)) { Game::get().wizards.upgradeManager.setSprite(WIZARD); }
+}
+
+void NameWizard::render() {
+    Rect r = Game::get().getAbsRect(mRect);
+    Game::get().assets.drawTexture(getImage(), r, NULL);
+
+    Sprite::render();
+}

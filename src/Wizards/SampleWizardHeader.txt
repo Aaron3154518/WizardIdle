@@ -1,0 +1,26 @@
+#ifndef NAME_WIZARD_h
+#define NAME_WIZARD_h
+
+#include "../Rect.h"
+#include "../Number.h"
+#include "../Tools.h"
+#include "../AssetManager.h"
+#include "Sprite.h"
+
+class NameWizard : public Sprite {
+public:
+    NameWizard();
+    ~NameWizard() = default;
+
+    void init();
+    void update(Timestep ts);
+    void handleEvent(Event& e);
+    void render();
+
+    std::string getImage() { return "name_wizard"; }
+private:
+
+public:
+};
+
+#endif /* NAME_WIZARD_h */
